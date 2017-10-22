@@ -1,0 +1,69 @@
+\contentsline {chapter}{Executive Summary}{1}{chapter*.1}
+\contentsline {chapter}{\numberline {1}Requirements gathering and preliminaries}{5}{chapter.1}
+\contentsline {section}{\numberline {1.1.}Introduction}{6}{section.1.1}
+\contentsline {section}{\numberline {1.2.}Scope of project}{9}{section.1.2}
+\contentsline {section}{\numberline {1.3.}Project management}{11}{section.1.3}
+\contentsline {subsection}{\numberline {1.3.1. \ }Budget and BOM}{11}{subsection.1.3.1}
+\contentsline {subsection}{\numberline {1.3.2. \ }Project management tools}{11}{subsection.1.3.2}
+\contentsline {chapter}{\numberline {2}Technology selection and overall design}{13}{chapter.2}
+\contentsline {section}{\numberline {2.1.}Drone Selection}{14}{section.2.1}
+\contentsline {subsection}{\numberline {2.1.1. \ }Initial Testing Drone}{14}{subsection.2.1.1}
+\contentsline {subsection}{\numberline {2.1.2. \ }Final Prototype Drone}{15}{subsection.2.1.2}
+\contentsline {section}{\numberline {2.2.}Estimation algorithm selection}{17}{section.2.2}
+\contentsline {subsection}{\numberline {2.2.1. \ }Background}{17}{subsection.2.2.1}
+\contentsline {subsection}{\numberline {2.2.2. \ }Pre-existing solutions for localising UAVs}{17}{subsection.2.2.2}
+\contentsline {subsection}{\numberline {2.2.3. \ }Requirements for algorithm}{21}{subsection.2.2.3}
+\contentsline {subsection}{\numberline {2.2.4. \ }SLAM algorithm review}{22}{subsection.2.2.4}
+\contentsline {subsubsection}{\numberline {}Filter based SLAM}{22}{subsubsection.2.2.4.1}
+\contentsline {subsubsection}{\numberline {}Graph based SLAM}{22}{subsubsection.2.2.4.2}
+\contentsline {subsection}{\numberline {2.2.5. \ }Final selection of algorithm}{24}{subsection.2.2.5}
+\contentsline {section}{\numberline {2.3.}Selection of sensor hardware}{25}{section.2.3}
+\contentsline {section}{\numberline {2.4.}Selection of additional software}{27}{section.2.4}
+\contentsline {subsection}{\numberline {2.4.1. \ }Flight controller}{27}{subsection.2.4.1}
+\contentsline {subsubsection}{\numberline {}ArduPilot}{28}{subsubsection.2.4.1.1}
+\contentsline {subsubsection}{\numberline {}PX4}{29}{subsubsection.2.4.1.2}
+\contentsline {subsection}{\numberline {2.4.2. \ }Communications layer}{30}{subsection.2.4.2}
+\contentsline {section}{\numberline {2.5.}Overall System Architecture}{31}{section.2.5}
+\contentsline {subsection}{\numberline {2.5.1. \ }Network solution}{31}{subsection.2.5.1}
+\contentsline {subsection}{\numberline {2.5.2. \ }Location of LiDAR/SONAR drivers}{32}{subsection.2.5.2}
+\contentsline {subsection}{\numberline {2.5.3. \ }Location of MAVROS}{32}{subsection.2.5.3}
+\contentsline {chapter}{\numberline {3}System development}{34}{chapter.3}
+\contentsline {section}{\numberline {3.1.}Construction of URSA}{35}{section.3.1}
+\contentsline {subsection}{\numberline {3.1.1. \ }Combined Hokuyo \& Ultrasonic Mount}{35}{subsection.3.1.1}
+\contentsline {subsection}{\numberline {3.1.2. \ }Ultrasonic Mount - Version 1}{36}{subsection.3.1.2}
+\contentsline {subsection}{\numberline {3.1.3. \ }Ultrasonic Mount - Version 2}{37}{subsection.3.1.3}
+\contentsline {subsection}{\numberline {3.1.4. \ }Final Mounts}{37}{subsection.3.1.4}
+\contentsline {section}{\numberline {3.2.}Development of simulation environment}{38}{section.3.2}
+\contentsline {section}{\numberline {3.3.}Interfacing with sensors}{38}{section.3.3}
+\contentsline {subsection}{\numberline {3.3.1. \ }Raspberry Pi real-time operating system}{39}{subsection.3.3.1}
+\contentsline {subsection}{\numberline {3.3.2. \ }Signal conditioning of SONAR}{40}{subsection.3.3.2}
+\contentsline {subsection}{\numberline {3.3.3. \ }Sensor interface to PX4}{43}{subsection.3.3.3}
+\contentsline {subsubsection}{\numberline {}PX4 Driver Framework}{43}{subsubsection.3.3.3.1}
+\contentsline {subsubsection}{\numberline {}Hardware review}{44}{subsubsection.3.3.3.2}
+\contentsline {subsubsection}{\numberline {}Development of drivers for I2C \& SPI components}{45}{subsubsection.3.3.3.3}
+\contentsline {subsubsection}{\numberline {}Development of GPIO drivers}{46}{subsubsection.3.3.3.4}
+\contentsline {subsubsection}{\numberline {}Conclusion on sensor interfacing to PX4}{49}{subsubsection.3.3.3.5}
+\contentsline {section}{\numberline {3.4.}Handheld Mapping}{49}{section.3.4}
+\contentsline {subsection}{\numberline {3.4.1. \ }Receiving Laser Scan Data}{50}{subsection.3.4.1}
+\contentsline {subsection}{\numberline {3.4.2. \ }Communicate with the drone via ground-station}{52}{subsection.3.4.2}
+\contentsline {subsection}{\numberline {3.4.3. \ }Visualize laser scanner data}{54}{subsection.3.4.3}
+\contentsline {subsection}{\numberline {3.4.4. \ }Cartographer}{55}{subsection.3.4.4}
+\contentsline {subsection}{\numberline {3.4.5. \ }Filtering Laser Scan Data}{55}{subsection.3.4.5}
+\contentsline {section}{\numberline {3.5.}Project milestone - Hovering in place}{55}{section.3.5}
+\contentsline {subsection}{\numberline {3.5.1. \ }Power}{55}{subsection.3.5.1}
+\contentsline {subsection}{\numberline {3.5.2. \ }EKF Fusion}{56}{subsection.3.5.2}
+\contentsline {subsection}{\numberline {3.5.3. \ }Interface for taking off}{57}{subsection.3.5.3}
+\contentsline {section}{\numberline {3.6.}Navigation}{57}{section.3.6}
+\contentsline {subsection}{\numberline {3.6.1. \ }Global Planner \& Costmap}{59}{subsection.3.6.1}
+\contentsline {subsection}{\numberline {3.6.2. \ }Local Planner \& Costmap}{60}{subsection.3.6.2}
+\contentsline {subsubsection}{\numberline {}Trajectory Generation}{61}{subsubsection.3.6.2.1}
+\contentsline {subsubsection}{\numberline {}Cost Functions}{62}{subsubsection.3.6.2.2}
+\contentsline {paragraph}{\numberline {(i)}Obstacle Cost Function}{63}{paragraph.3.6.2.2.1}
+\contentsline {paragraph}{\numberline {(ii)}Ursa goal Cost Function}{65}{paragraph.3.6.2.2.2}
+\contentsline {paragraph}{\numberline {(iii)}Turn Before Moving}{66}{paragraph.3.6.2.2.3}
+\contentsline {chapter}{\numberline {4}Testing and conclusions}{68}{chapter.4}
+\contentsline {section}{\numberline {4.1.}Testing methodology}{69}{section.4.1}
+\contentsline {section}{\numberline {4.2.}Tests undertaken and results}{69}{section.4.2}
+\contentsline {section}{\numberline {4.3.}Future roadmap and limitations}{69}{section.4.3}
+\contentsline {section}{\numberline {4.4.}Conclusion}{70}{section.4.4}
+\contentsline {chapter}{\numberline {A}Bill of Materials}{72}{appendix.A}

@@ -1,0 +1,159 @@
+\documentclass{report}
+\title{Capstone Project - RR4-IP \\Unmanned Recon and Surveillance Aircraft (U.R.S.A.) \\ \Huge Draft Report}
+\author{\large Lachlan Dowling - 682434 \\ Isaac Hook - 720679 \\ Hao Tang - 640207 }
+\date{2017}
+\setlength\parindent{0pt}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{amssymb,amsmath}
+\usepackage{booktabs}
+\usepackage{multirow}
+\renewcommand{\arraystretch}{1.5}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{pgfplots}
+\usepackage{afterpage}
+\pgfplotsset{compat=1.12}
+\usepackage{soul}
+\usepackage{pdfpages}
+\usepackage{xstring}
+\usepackage{siunitx}
+\usepackage{tikz}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{mathtools}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{rotating}
+\usepackage{pdflscape}
+\usepackage{appendix}
+\usepackage{subfiles}
+\usepackage[americancurrents, americanvoltages,siunitx]{circuitikz}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Capstone Project}
+\rhead{Draft Report: RR4-IP}
+\rfoot{Page \thepage}
+\DeclareSIUnit\dBm{dBm}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{\node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+\let\oldhat\hat
+\renewcommand{\hat}[1]{\oldhat{\bm{#1}}}
+\lstset{basicstyle=\ttfamily,
+    showstringspaces=false,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red}\ttfamily,
+    commentstyle=\color{green}\ttfamily
+}
+\renewcommand\thesection{\arabic{chapter}.\arabic{section}.}
+\renewcommand\thesubsection{\arabic{chapter}.\arabic{section}.\arabic{subsection}. \ }
+\renewcommand\thesubsubsection{}
+\renewcommand\theparagraph{(\roman{paragraph})}
+\renewcommand\thesubfigure{\roman{subfigure}}
+
+\titleformat{\section}[frame]
+{\normalfont}
+{\filright
+\footnotesize}
+{8pt}
+{\Large\bfseries\filcenter \enspace \thesection \enspace}
+
+\titleformat{\subsection}[hang]
+{\normalfont\sffamily}
+{\large\bfseries\thesubsection}{1.5em}{\large\bfseries}
+
+
+\titleformat{\subsubsection}[hang]
+{\normalfont\sffamily}
+{\bfseries{\thesubsubsection}}{.5em}{\bfseries}
+
+\setcounter{secnumdepth}{4}
+\titleformat{\paragraph}[runin]
+{\normalfont\sffamily}
+{\theparagraph}{.5em}{}
+
+\everymath={\displaystyle}
+
+\newenvironment{changemargin}[2]{%
+\begin{list}{}{%
+\setlength{\topsep}{0pt}%
+\setlength{\leftmargin}{#1}%
+\setlength{\rightmargin}{#2}%
+\setlength{\listparindent}{\parindent}%
+\setlength{\itemindent}{\parindent}%
+\setlength{\parsep}{\parskip}%
+}%
+\item[]}{\end{list}}
+
+\begin{document}
+\thispagestyle{empty}
+    \maketitle
+    \thispagestyle{empty}
+    
+    \newpage
+
+    \clearpage
+    \setcounter{page}{1}
+
+
+\subfile{abstract.tex}
+\tableofcontents
+
+
+\subfile{introduction.tex}
+\subfile{litreview.tex}
+\subfile{designdevelopment.tex}
+\subfile{implementation.tex}
+\subfile{results.tex}
+
+
+
+\appendix
+\appendixpage
+\chapter{Bill of Materials}
+\includepdf[pages=-]{appendices/bom.pdf}
+% \chapter{BCM2835 ARM Peripherals datasheet}
+% \includepdf[pages=-]{appendices/BCM2835-ARM-Peripherals.pdf}
+% \chapter{HC-SR04 datasheet}
+% \includepdf[pages=-]{appendices/HCSR04.pdf}
+% \chapter{PCA9685 datasheet}
+% \includepdf[pages=-]{appendices/PCA9685.pdf}
+% \chapter{MS5611 datasheet}
+% \includepdf[pages=-]{appendices/MS5611.pdf}
+% \chapter{MPU9250 datasheet}
+% \includepdf[pages=-]{appendices/MPU9250.pdf}
+% \chapter{ADS1115 datasheet}
+% \includepdf[pages=-]{appendices/ADS1115.pdf}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
