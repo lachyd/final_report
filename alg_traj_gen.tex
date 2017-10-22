@@ -1,0 +1,37 @@
+\documentclass[capstone_report.tex]{subfiles}
+\begin{document}
+\begin{algorithm}[H]
+
+\SetKwInput{KwInput}{Input}
+\SetKwInput{KwOutput}{Output}
+
+\KwInput{vector position, vector global\_traj, vector previous\_traj}
+\KwOutput{vector samples, vector previous\_traj}
+ \KwResult{Given current drone position and global plan, output is a vector of 
+ positional co-ordinates (x,y,th) for use in generating trajectories}\vspace{1.5mm}
+
+ \uIf{global\_traj\_endpoint inside radius}{
+    samples.push(global\_traj.back());
+ }
+ \uElse{
+    \tcc{Add points along the global plan at 10cm intevals}
+    \For{i in global\_traj}{
+        dist = euclidean\_dist(samples.back(), global\_traj[i])\\
+        \If{dist $\geq$ 0.1}{
+            samples.push(global\_traj[i])
+        }
+    }\vspace{3.5mm}
+    \tcc{Generate perpendicular points (random length)}
+    \For{j in samples}{
+        samples.push(perp\_points(samples[j]))
+    }
+ }\vspace{3.5mm}
+ \tcc{Add previous trajectory}
+ \If{previous\_traj}{
+    samples.push(previous\_traj.back())
+}
+
+ \caption{Local trajectory sampling of global plan}
+ \label{alg:trajgen}
+\end{algorithm}
+\end{document}
