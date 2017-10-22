@@ -14,11 +14,73 @@ Despite this, we did still encounter some edge cases which almost caused collisi
 
 
 \section{Tests undertaken and results}
-With local dynamics account for with our constructed local planner and cost functions properly implemented, URSA was ready to navigate environments. Tests were undertaken to show that URSA was capable of some fundamental behaviours: avoiding collisions, avoiding obstacles with suﬃcient clearance, properly orienting itself before moving forwards, and lastly, reach its set destination. \\
+With local dynamics account for with our constructed local planner and cost functions properly implemented, URSA was ready to navigate environments. Tests were undertaken to show that URSA was capable of some fundamental behaviours: avoiding collisions, avoiding obstacles with sufficient clearance, properly orienting itself before moving forwards, and lastly, reach its set destination. \\
 
 Due to convenience, testing was predominantly undertaken in the Terabit Networking Lab in the University’s Electrical Engineering faculty building, with chairs and people acting as obstructions and corners. A waypoint was set, the drone was held onto (to prevent accidental collisions) and the results were observed by the team.\\
 
 A large number of tests and edge cases were encountered, so the tests were not formalised in each case. However, a wide range of room configurations were set up and tested in to ensure that the scope objectives and behvaiours listed above were met. This way, improper behaviour, such as overshoot and the following of non-optimal trajectories were removed through continual amending of algorithms. All of the requirements established in the scope of the project were met, with return to base and landing in the event of low power functionalities yet to be fully tested.
+
+\subsection{Avoiding Dynamic Obstacles}
+One objective outlined in the scope of the project was the ability to avoid dynamic obstacles.  To test this capability the following experiment was conducted:
+\begin{enumerate}
+    \item The drone was sent a goal setpoint from its current position
+    \item The path from the current drone position to the goal setpoint was unobstructed
+    \item As the drone was navigating along the path an obstacle (human) would obstruct it's path
+\end{enumerate}
+Success was measured if the drone was able to re-generate a trajectory around the obstacle, avoid a collision and reach the original goal setpoint.  The location of the dynamic obstacle was chosen such that a path still existed between the drone and the goal within reasonable margins of obstacles.  Figure \ref{fig:avoid_obs} shows the real-time output to RVIZ when the experiment was conducted in the TNL lab.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.97\textwidth]{./imgs/dynamic_objects/an_frame_1.png}
+        \caption{Frame 1: Generated trajectory to goal}
+        \label{fig:avoid_obs_1}
+    \end{subfigure}%
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.97\textwidth]{./imgs/dynamic_objects/an_frame_2.png}
+        \caption{Frame 2: Re-generated trajectory to goal to avoid obstacle}
+        \label{fig:avoid_obs_2}
+    \end{subfigure}
+    \caption{Experiment conducted showing drone avoiding dynamic obstacles.  (1) Drone location (2) Local trajectory goal (3) Global goal (4) Dynamic obstacle\label{fig:avoid_obs}}
+\end{figure}
+
+Figure \ref{fig:avoid_obs_1} shows the first stage of the experiment where the drone was asked to generate a trajectory from it's current position to the global goal.  During it's progression along the trajectory an obstacle obstructed it's path.   Figure \ref{fig:avoid_obs_2} shows that a new local trajectory goal was able to be generated to give suitable clearance from the obstacle.  The drone was able to reach the original goal setpoint.\\
+
+From this experiment we conclude that the drone is able to avoid dynamic obstacles in a laboratory setting.  However further testing could still be carried out.  A large gap between the drone and obstacle (1 metre) gave time for the drone to respond.  In subsequent tests this gap should be reduced to find the limitations of the obstacle avoidance capability.
+
+\subsection{Turning Corners}
+To be able to navigate an environment one core capability required is to be able to turn corners.  Demonstrating ability to turn corners also illustrates the drones capability to navigate into previously unseen environments and avoid static obstacles.
+
+To evaluate the ability of the drone to turn corners the following experiment was conducted:
+\begin{enumerate}
+    \item place goal setpoint at an unseen location around a corner
+    \item record any collisions 
+\end{enumerate}
+Success was measured if the drone was able to navigate to the goal setpoint without any collisions.
+This experiment resulted in a number of changes to the trajectory generator and cost functions to meet the criteria.
+
+
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.97\textwidth]{./imgs/turn_corners/an_frame_1.jpg}
+        \caption{Frame 1: Global setpoint placed in unseen environment around corner}
+        \label{fig:avoid_obs_1}
+    \end{subfigure}%
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.97\textwidth]{./imgs/turn_corners/an_frame_2.jpg}
+        \caption{Frame 2: Drone reached global setpoint}
+        \label{fig:avoid_obs_2}
+    \end{subfigure}
+    \caption{Experiment showing drone turning corners (1) Global setpoint\label{fig:avoid_obs}}
+\end{figure}
+
+\subsection{Narrow Passageways}
 
 \section{Future roadmap and limitations}
 In this section, potential future additions to the drone and limitations of the present prototype will be discussed.  It makes sense to discuss these items together, since many of the items on the future roadmap arise by being limitations of the current prototype. In many cases, these limitations are by design and are an artifact of the team intentionally restricting an otherwise open-ended scope. \\

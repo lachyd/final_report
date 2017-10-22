@@ -614,19 +614,7 @@ At a high level the navigation stack can be thought of as a black box accepting 
 
 The global planner takes inputs from the global costmap, goal setpoint and generates the best long term plan.  The local planner considers the local costmap, current laser scan information and position to find the best path along the global plan.  A primary goal of the local plan is to ensure that it avoids obstacles whilst advancing towards the local goal.  In some instances the robot may get stuck.  The navigation stack handles these occurrences by initiating recovery behaviours.\\
 
-Each of these components can be developed separately as long as they adhere to the interface specified in the navcore package.  The move base package connects them together to achieve a global navigation task.  Before implementing the navigation package a number of pre-requisites need to be met:
-\begin{itemize}
-\item Hardware
-    \subitem Differential or holonomic robot - to be customized so is compatible
-    \subitem Planar laser
-    \subitem Preferably square / circular robot - approximately circular
-\item Software
-    \subitem Tf tree in place – section XXXX shows set up of this
-    \subitem Configure for shape and dynamics of robot base
-    \subitem Sensor data to correct ROS message types
-        \subsubitem Hokuyo publishing to /scan
-        \subsubitem Odometry publishing to /odom
-\end{itemize}
+Each of these components can be developed separately as long as they adhere to the interface specified in the navcore package.  The move base package connects them together to achieve a global navigation task.\\
 
 Figure \ref{fig:nav_stack} shows our setup and summarises the high-level concepts of the navigation stack.  The XXXX coloured boxes highlight the components, which were modified by URSA.  In the following subsections we cover the components of the navigation stack in more detail.  We dedicate more focus to those that were modified/added by URSA.
 
@@ -741,6 +729,39 @@ Another issue was identified when observing the drone turn corners in simulation
     \caption{Perpendicular points\label{fig:local_traj_gen_perp}}
 \end{figure}
 
+Algorithm \ref{alg:trajgen} summarises the operation of the local trajectory generator in pseudocode.\\
+\begin{algorithm}[H]
+\SetKwInput{KwInput}{Input}
+\SetKwInput{KwOutput}{Output}
+\KwInput{vector position, vector global\_traj, vector previous\_traj}
+\KwOutput{vector samples, vector previous\_traj}
+\KwResult{Given current drone position and global plan, output is a vector of 
+positional co-ordinates (x,y,th) for use in generating trajectories}\vspace{1.5mm}
+
+\uIf{global\_traj\_endpoint inside radius}{
+samples.push(global\_traj.back());
+}
+\uElse{
+\tcc{Add points along the global plan at 10cm intevals}
+\For{i in global\_traj}{
+    dist = euclidean\_dist(samples.back(), global\_traj[i])\\
+    \If{dist $\geq$ 0.1}{
+        samples.push(global\_traj[i])
+    }
+}\vspace{3.5mm}
+\tcc{Generate perpendicular points (random length)}
+\For{j in samples}{
+    samples.push(perp\_points(samples[j]))
+}
+}\vspace{3.5mm}
+\tcc{Add previous trajectory}
+\If{previous\_traj}{
+samples.push(previous\_traj.back())
+}
+\caption{Local trajectory sampling of global plan}
+\label{alg:trajgen}
+\end{algorithm}
+
 \subsubsection{Cost Functions}
 
 In the above section we made the assumption that cost functions had been implemented.  Of course, without the appropriate cost functions no trajectory could be selected, as they would not be distinguishable from one another.  In this section we cover the cost functions utilised by the URSA local planner.  We first consider the desired properties of a local trajectory.  Ideally we want our drone to follow a trajectory that:
@@ -768,19 +789,25 @@ A core concept to understanding how the obstacle cost function is understanding 
 
 The obstacle map layer places laser scan data in a two dimensional grid.  Cells containing sensor readings are marked as occupied whereas the space between the drone and this reading is marked as clear.\\
 
-The inflation layer creates a buffer around the occupied cells by propagating costs via a decaying exponential.  Sensor readings indicate obstacles, therefore if the centre point of a robot was inside these cells there would definitely be a collision.  Therefore these cells are prescribed the maximum cost 254 and are referred to as lethal costs.  The next two costs are referred to as inscribed and circumscribed costs.  These names refer to how the costmap handles robots of arbitrary shapes.  The circumscribed region of the robot is a circle passing through the outermost points of the robots perimeter.  The inscribed region is a circle passing through the innermost regions of its perimeter (\ref{fig:circumscribed}).  Obstacles within the inscribed region are definitely in collision with the robot, therefore these cells are assigned a score of 253.  In our case the inscribed and circumscribed regions are the same as we approximate our drone shape by a circle.  Cells at a distance further than the circumscribed radius have their costs determined by a decaying exponential function (Figure \ref{fig:inflation_radius}).\\
+The inflation layer creates a buffer around the occupied cells by propagating costs via a decaying exponential.  Sensor readings indicate obstacles, therefore if the centre point of a robot was inside these cells there would definitely be a collision.  Therefore these cells are prescribed the maximum cost 254 and are referred to as lethal costs.  The next two costs are referred to as inscribed and circumscribed costs.  These names refer to how the costmap handles robots of arbitrary shapes.  The circumscribed region of the robot is a circle passing through the outermost points of the robots perimeter.  The inscribed region is a circle passing through the innermost regions of its perimeter (\ref{fig:circumscribed}).  Obstacles within the inscribed region are definitely in collision with the robot, therefore these cells are assigned a score of 253.  In our case the inscribed and circumscribed regions are the same as we approximate our drone shape by a circle.  Cells at a distance further than the circumscribed radius have their costs determined by a decaying exponential function (Figure \ref{fig:inflation_radius}).
+
+\begin{align*}
+    cost\_decay &= 252*\exp(-1 * csf * (dist\_obst - radius))\\
+    csf &=    \text{cost scaling factor}\\
+    dist\_obst &=    \text{distance from drone centre cell to obstacle}
+\end{align*}
 
 \begin{figure}[H]
     \centering
     \begin{subfigure}{0.5\textwidth}
         \centering
-        \includegraphics[width=0.9\textwidth]{example-image-a}
+        \includegraphics[width=0.65\textwidth]{./imgs/circumscribed.jpg}
         \caption{Circumscribed and inscribed radius}
         \label{fig:circumscribed}
     \end{subfigure}%
     \begin{subfigure}{0.5\textwidth}
         \centering
-        \includegraphics[width=0.9\textwidth]{example-image-a}
+        \includegraphics[width=1.1\textwidth]{./imgs/inflation_radius.jpg}
         \caption{Illustration of the inflation radius}
         \label{fig:inflation_radius}
     \end{subfigure}
