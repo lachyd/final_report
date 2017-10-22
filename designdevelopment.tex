@@ -1,4 +1,111 @@
 \documentclass[capstone_report.tex]{subfiles}
 \begin{document}
 
+\section{Drone Selection}
+The most important technology decision to be made for URSA is which UAV platform should be used for our prototype. The purpose of this section is to compare existing drone platforms and evaluate their suitability for our project.\\
+
+The goal of our project is to produce a drone that can autonomously navigate an indoor environment while simultaneously mapping the environment for use by the operator to identify hazards and inform tactics.  To achieve this outcome the drone will need to be outfitted with a number of sensors as detailed later in this report.\\
+
+The scope of our project includes the production of a prototype that can demonstrate the capabilities detailed in previous sections.  Therefore to test out algorithms and sensors a low cost platform is required that does not necessarily have to meet the performance criteria of a final product prototype.\\
+
+Below we contrast selection criteria for an initial testing drone with that of a final product prototype.  As future work is done on this project there is likely to be a need to upgrade the drone platform.
+
+\subsection{Initial Testing Drone}
+In the testing stage a low cost drone is required to trial initial algorithms.  Drone should be low cost and robust to damage.  A list of criteria to assess a drone in this stage should be
+
+\begin{table}[H]
+\centering
+\label{test_requirements}
+\begin{tabular}{lp{6cm}p{8cm}}
+\toprule
+                               & Features                                   & Description                                                                                                   \\ \midrule
+\multirow{7}{*}{Important}     & Low cost                                   & Possibility of damage, lower cost improves likelihood of affording replacement or parts                       \\
+                               & Payload \textgreater= 500g                 & Should be able to carry sensor requirements                                                                   \\
+                               & Minimum number of in built cameras/sensors & Will use custom camera sensors, no need to have in-built cameras (adds to cost)                               \\
+                               & Robust to damage                           & Possibility of damage.  Flight landing feet and rotor guards are desired                                      \\
+                               & Accessible API                             & Shorten development time to focus on algorithms.  Access to flight control and telemetry via API is desirable \\
+                               & ROS integration                            & Shorten development time.  Ability to interface with on-board sensors.                                        \\
+                               & Customizability                            & Ability easily interface with selected sensors and flexibility to quickly iterate designs.                    \\
+\midrule
+\multirow{5}{*}{Not Important} & Battery life                               & Tethering testing drone is an option                                                                          \\
+                               & Max altitude                               & Will only be testing inside less than the height of typical room                                              \\
+                               & Operating range                            &   Will be in close proximity                                                                                                            \\
+                               & Performance metrics (speed, tilt)          & Initial test environment will not be challenging                                                              \\ \midrule
+\end{tabular}
+\end{table}
+
+The main criteria that imposed a limitation on the number of options for drone were the cost, API access and payload requirements.  Drones were considered to be low cost if they were approximately \$1,000 or less.  API access was considered when flight control and telemetry was offered.  Drones with a payload capacity greater than or equal to 500g were considered.\\
+
+A full comparison of drone platforms can be found in figure \ref{comparison}.  After surveying available drones the 2 potential options that met this criteria were:
+
+\begin{table}[H]
+\centering
+\label{eligible_drones}
+\begin{tabular}{@{}lllll@{}}
+\toprule
+Drone       & Cost          & Payload       & API & ROS \\ \midrule
+Erle Copter & \$870 - \$1,100 & \textless=1kg & Yes & Yes \\
+3DR Solo    & \$1,100       & 450-500g      & Yes & No  \\ \bottomrule
+\end{tabular}
+\end{table}
+
+The Erle copter ranges in cost depending on the optional extras selected.  Omitting the long-range telemetry and landing legs (recommended if using gimbal) reduces cost to \$870.  Both drones have an accessible API, whereas the Erle copter has the advantage of being integrated with ROS.\\
+
+The payload of the Erle copter is also considerably higher allowing more leeway for testing sensors and resulting in less strain on battery life.  The advantage of the 3DR solo is that it comes preassembled.  The Erle copter has an option to also come preassembled however this will increase the cost to \$1,250 (failing the low cost criteria).
+
+Another advantage of the 3DR solo is it can be locally sourced improving on the 1-week lead time of the Erle copter.\\
+
+We opted to purchase Erle Copter as a test drone.  Although lead time and build time was slightly higher than the 3DR solo, Erle copter is a better choice on all other criteria.\\
+
+This hardware selection review was conducted before deciding upon ROS as a communications layer.  Using hindsight, the criteria should be updated from "accessible API" to "supports ROS".  As is seen in later sections of the report, ROS was an integral component to run and integrate the majority of features including, receiving sensor data, visualization and navigational capabilities.
+
+\subsection{Final Prototype Drone}
+Producing a final product drone is outside the scope of our project, however for completeness, additional points to consider when selecting/building a final product drone are mentioned here.  In contrast to the initial testing drone the final product prototype will place greater importance on battery life, performance and accuracy.
+
+\begin{table}[H]
+\centering
+\label{final_requirements}
+\begin{tabular}{p{6cm}p{8cm}}
+\toprule
+Features                           & Description                                                                         \\ \midrule
+Battery life \textgreater= 25 mins & Cannot be tethered                                                                  \\
+Payload \textgreater= 500g         & Should be able to carry sensor requirements                                         \\
+Operating range \textgreater=2km   & Should be able to be operated remotely within distance of long building.            \\
+ROS integration                    & Shorten development time.  Ability to interface with on-board sensors.              \\
+Max altitude \textgreater= 30m     & Should be able to climb to height of greater than two storey building               \\
+GPS                                & Will be used in positioning and flight path control                                 \\
+Size                               & Should allow for manoeuvrability indoors.  Less than typical door width $\sim$=0.8m \\
+Operating temperature              & Withstand temperatures in typical emergency situations                              \\ \bottomrule
+\end{tabular}
+\end{table}
+\afterpage{\clearpage
+\begin{sidewaystable}
+\centering
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+Drone                  & API         & ROS & Payload            & Cost         & Size   & Flight Time   & GPS         & Transmission Distance \\ \midrule
+Phantom 3 Standard     & mobile only & n   & 200-300g           & USD \$499    & 350mm  & 25mins        & y           & 500 - 1000m           \\
+Phantom 3 Professional & mobile only & n   & ?                  & ?            & 350mm  & 23mins        & GPS/GLONASS & 3.5 - 5km             \\
+Phantom 3 Advanced     & mobile only & n   & ?                  & ?            & 350mm  & 23mins        & GPS/GLONASS & 3.5 - 5km             \\
+Phantom 4              & mobile only & n   & ?                  & USD \$1,199  & 350mm  & 28mins        & GPS/GLONASS & 3.5 - 5km             \\
+Phantom 4 Pro          & mobile only & n   & ?                  & USD \$1,499  & 350mm  & 30mins        & GPS/GLONASS & 3.5 - 7km             \\
+Iris+                  & y           & n   & 400g               & discontinued & ?      & 16-22mins     & y           & ?                     \\
+UDI U818A              & n           & n   & ?                  & USD \$45     & ?      & ?             & ?           & ?                     \\
+Erle Copter            & y           & y   & 1kg                & EUR \$1,000  & 370mm  & 20mins        & y           & 2km                   \\
+Parrot Beebop 2        & y           & y   & 200g               & USD \$550    & 382mm  & 25mins        & y           & 300m                  \\
+Parrot AR 2 Power      & y           & y   & 130 - 150g500g max & USD 300      & 570mm  & 36mins        & n           & 50m                   \\
+Parrot AR 2 GPS        & y           & y   & 130 - 150g500g max & USD 300      & 570mm  &               & y           & 50m                   \\
+Parrot AR 2 Elite      & y           & y   & 130 - 150g500g max & USD 250      & 570mm  & 12 mins       & n           & 50m                   \\
+DJI Mavic Pro          & mobile only & n   & ?                  & USD 1000     & 335mm  & 27 mins       & GPS/GLONASS & 7km                   \\
+Matrice 100            & y           & y   & 1.1kg              & USD \$3,299  & 650 mm & 17min - 40min & y           & 3.5 - 5km             \\
+Matrice 600 pro        & y           & y   & 5.5-6.5kg          & USD \$4,999  & 1133mm & 32min - 38min & y           & 3.5 - 5km             \\
+Inspire 1              & mobile only & n   & 440-650g           & USD \$1,999  & 581mm  & 18mins        & y           & 2km                   \\
+3DR Solo               & y           & n   & 450-500g           & \$1,099      & 460mm  & 16 - 25mins   & y           & 800m                  \\
+Phantom 4              & mobile only & n   & 200-300g           & USD \$1,199  & 350mm  & $\sim$28mins  & y           & ?                     \\
+Albris                 & n           & n   & ?                  & ?            & 800mm  & 22mins        & y           & 2km                   \\ \bottomrule
+\end{tabular}
+\caption{Comparison of drone platforms}
+\label{comparison}
+\end{sidewaystable}\clearpage}
+
 \end{document}
