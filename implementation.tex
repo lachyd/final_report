@@ -1,4 +1,5 @@
 \documentclass[capstone_report.tex]{subfiles}
+\externaldocument{designdevelopment.tex}
 \begin{document}
 \chapter{System development}
 With both the technical and project management groundwork in place, we were able to commence development of the URSA system. This chapter outlines, in a relatively fixed chronological order, the activities undertaken in pursuance of each of the milestones previously enumerated. \\
@@ -326,9 +327,9 @@ After interfacing the drone with sensors, the next step is to construct a map wh
 \end{itemize}
 
 \subsection{Receiving Laser Scan Data}
-We begin by discussing the communication of laser scan data between the drone and desktop.  In section XXXX ROS was selected as the middleware to enable communications across systems.   Some of the benefits of using ROS were also discussed, namely it’s package-based ecosystem making thousands of robotics and automation software available for use.  In this section we discuss ROS in more depth.  We cover the main components of ROS, it’s guiding principles and how they were used to communicate laser scan data between devices.\\
+We begin by discussing the communication of laser scan data between the drone and desktop.  In section \ref{subsec:comm_layer} ROS was selected as the middleware to enable communications across systems.   Some of the benefits of using ROS were also discussed, namely it’s package-based ecosystem making thousands of robotics and automation software available for use.  In this section ROS is discussed in more depth.  We cover the main components of ROS, it’s guiding principles and how they were used to communicate laser scan data between devices.\\
 
-As mentioned previously packages are the primary organisation unit within ROS.  Packages are written to address a specific problem such as communicating laser scanner data or computing mathematical transfers.  They can simply be thought of as a folder containing a number of scripts, executable and other artefacts. The definition of a package is kept intentionally minimal by ROS to support their guiding philosophy of being ‘thin’\footnote{See http://www.willowgarage.com/sites/default/files/icraoss09-ROS.pdf}.  Therefore the only required components are an XML package description and a CMakeLists.txt file for the build system.  To test our communication link we wrote our own ‘debug’ package. Creating a package can either be done manually or via the utility command:
+As mentioned previously packages are the primary organisation unit within ROS.  Packages are written to address a specific problem such as communicating laser scanner data or computing mathematical transfers.  They can simply be thought of as a folder containing a number of scripts, executables and other artefacts. The definition of a package is kept intentionally minimal by ROS to support their guiding philosophy of being ‘thin’\footnote{See http://www.willowgarage.com/sites/default/files/icraoss09-ROS.pdf}.  Therefore the only required components are an XML package description and a CMakeLists.txt file for the build system.  To test our communication link we wrote our own ‘debug’ package. Creating a package can either be done manually or via the utility command:
 
 \begin{lstlisting}[language=bash]
     catkin_create_package <package name> <dependency 1> <dependency 2> ... 
@@ -349,7 +350,7 @@ As mentioned previously packages are the primary organisation unit within ROS.  
 
 Whereas a package is the software organisation unit of ROS, a node is the primary computational unit.  A node can just be thought of as an executable that uses ROS to communicate with other nodes.  The simplest "computation graph" may be one node continually printing "hello world" and another node listening to the output (included in URSA debug).  Of course nodes can perform any desired computational task, for example: filtering laser scan data, calculating costs associated with navigating an environment or printing the height data for an ultrasonic component.  In our case we want to interface the Hokuyo UG01 with our drone.  As detailed in section XXXX we search the ROS documentation and find that the "urg\_node" package works with any SCIP 2.2 or earlier laser range finders.  An alternative method of installing a package if access to the source code is not required is simply$...$
 
-\begin{lstlisting}[language=xml]
+\begin{lstlisting}[language=bash]
     sudo apt-get install ros-kinetic-urg-node
 \end{lstlisting}
 
@@ -492,15 +493,16 @@ In our case we need to write a launch file that launches the urg\_node on the Ra
     <launch>
     <!-- Setup urg_node -->
     <machine name="drone" address="10.42.0.101" user="pi"/>
-    <node machine="drone" name="urg_node" pkg="urg_node" type="urg_node" 
-          respawn="true"/>
+    <node machine="drone" name="urg_node" pkg="urg_node" 
+        type="urg_node" respawn="true"/>
 
     <!-- Echo scan data -->
-    <node name="echo_scans" pkg="rostopic" type="rostopic" args="echo \scan" 
-          respawn="true" output="screen"/>
+    <node name="echo_scans" pkg="rostopic" type="rostopic" 
+        args="echo \scan" respawn="true" output="screen"/>
 
     <!-- Load robot description file to paramter server -->
-    <param name="robot_description" textfile="$(find debug)/urdf/ursa.urdf"/>
+    <param name="robot_description" 
+        textfile="$(find debug)/urdf/ursa.urdf"/>
 
     <!-- Use robot description to publish /tf node -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" 
@@ -524,7 +526,7 @@ In summary, ROS can be thought of a computation graph made up of nodes.  Nodes c
 
 As shown in Figures \ref{fig:message} and \ref{fig:laser_snippet}, laser scanner data is primarily composed of range measurements updated at \SI{10}{\hertz}.  Values such as minimum angle and angle increment are given so that all laser points can be derived relatively from the first point.  In it’s raw form it is difficult to interpret the data and confirm that readings received are in fact giving measurements representative of the surroundings.  Therefore the next step to be taken is to visualize the range data.\\
 
-It would not be difficult to write a custom solution using python for instance.  However, ROS already has it’s own visualization tool which natively can subscribe to topics and plot a particular data type.  RVIZ\footnote{http://wiki.ros.org/rviz} recognizes important message types such as laser scans, point clouds, geometric primitives and poses out of the box.  This capability reinforces the usefulness of ROS.  Multiple sources of data may communicate using the same message type for example a navigational goal and current robot pose may both use a pose message type.  Naming and colouring of the received data can then be done in RVIZ based on the topic name.  Therefore the visualization of data is decoupled from the generation of data.  In addition, plugins can be written to display more types of data.  We utilise this feature in section XXXX where a module is written to subscribe to camera data.\\
+ROS has it’s own visualization tool which can natively subscribe to topics and plot a particular data type.  RVIZ\footnote{http://wiki.ros.org/rviz} recognizes important message types such as laser scans, point clouds, geometric primitives and poses out of the box.  This capability reinforces the usefulness of ROS.  Multiple sources of data may communicate using the same message type for example a navigational goal and current robot pose may both use a pose message type.  Naming and colouring of the received data can then be done in RVIZ based on the topic name.  Therefore the visualization of data is decoupled from the generation of data.  In addition, plugins can be written to display more types of data.\\
 
 Laser scans adhering to the sensor\_msgs/Laser\_scan type are supported by RVIZ.  By running our previous launch script and executing the command \texttt{rosrun rviz rviz} we can effortlessly visualize the point cloud.  Figure \ref{fig:RVIZ_laser} shows the output.
 
@@ -599,7 +601,7 @@ Having achieved this first milestone, we then move onto the design of obstacle a
 
 \section{Navigation}
 
-At this stage we have now successfully integrated sensor data to simultaneously estimate the drones position and build a map.  We have also completed an initial test flight with the drone hovering to a set height and landing.  As mentioned in the scope of the project our main goal is to develop a drone that can navigate an indoor test environment whilst achieving the following:
+At this stage sensor data has been integrated to simultaneously estimate position and produce a map.  An initial test flight has also been complete with the drone hovering to a set height and landing.  As mentioned in the scope of the project our main goal is to develop a drone that can navigate an indoor test environment whilst achieving the following:
 
 \begin{itemize}
     \item Mapping stationary obstacles
@@ -608,7 +610,7 @@ At this stage we have now successfully integrated sensor data to simultaneously 
 \end{itemize}
 
 
-To achieve these goals we once again turn to ROS.  The navigation stack is a package that offers 2D navigation.  We restrict our navigational capabilities to 2D as we are using a planar laser for our primary position estimation tool.  A planar laser could be used for 3D navigation, the PR2 robot used by Eitan et. al produced 3D scans by tilting the laser \footnote{http://wiki.ros.org/Papers/ICRA2010\_Marder-Eppstein}.  On a drone platform the height could be adjusted to get multiple 2D slices of the environement.  However we considered 3D scans as out of scope and an area for expansion. \\
+The navigation stack is a package that offers a baseline 2D navigation implementation.  We restrict our navigational capabilities to 2D as we are using a planar laser for our primary position estimation tool.  A planar laser could be used for 3D navigation, the PR2 robot used by Eitan et. al produced 3D scans by tilting the laser \cite{marder2010office}.  On a drone platform the height could be adjusted to get multiple 2D slices of the environement.  However we considered 3D scans as out of scope and an area for expansion. \\
 
 At a high level the navigation stack can be thought of as a black box accepting sensory information (laser scans, odometry readings, height) and a target pose.  As output the package sends velocity commands to a mobile base.  The navigation stack is composed of several main components.  We introduce the high-level concepts here before discussing them in more depth.  At the heart of the navigation stack are trajectory planners and costmaps.  Trajectory planners take the current robot position and some goal and generate potential paths.  The costmaps influence the selection of optimal path by ensuring that trajectories do not pass through or too close to obstacles.  Both the trajectory planners and costmaps have local and global versions.\\
 
@@ -616,11 +618,11 @@ The global planner takes inputs from the global costmap, goal setpoint and gener
 
 Each of these components can be developed separately as long as they adhere to the interface specified in the navcore package.  The move base package connects them together to achieve a global navigation task.\\
 
-Figure \ref{fig:nav_stack} shows our setup and summarises the high-level concepts of the navigation stack.  The XXXX coloured boxes highlight the components, which were modified by URSA.  In the following subsections we cover the components of the navigation stack in more detail.  We dedicate more focus to those that were modified/added by URSA.
+Figure \ref{fig:nav_stack} shows our setup and summarises the high-level concepts of the navigation stack.  The blue and green coloured boxes highlight the components, which were modified or created by URSA.  In the following subsections we cover the components of the navigation stack in more detail.  We dedicate more focus to those that were modified/added by URSA.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{imgs/nav_stack.jpg}
+    \includegraphics[width=1\textwidth]{imgs/navigation_stack.png}
     \caption{Core components of the navigation stack\label{fig:nav_stack}}
 \end{figure}
 
@@ -634,22 +636,22 @@ The carrot planner is the simplest of the three and works by drawing a straight 
     \centering
     \begin{subfigure}{.5\textwidth}
         \centering
-        \includegraphics[width=0.7\textwidth]{imgs/carrot_planner_a.jpg}
+        \includegraphics[width=0.7\textwidth]{imgs/carrot_planner_a.png}
         \caption{Navigating a corner}
     \end{subfigure}%
     \begin{subfigure}{.5\textwidth}
         \centering
-        \includegraphics[width=0.7\textwidth]{imgs/carrot_planner_b.jpg}
+        \includegraphics[width=0.7\textwidth]{imgs/carrot_planner_b.png}
         \caption{Path to be drawn by operator}
     \end{subfigure}
     \caption{Carrot planner\label{fig:carrot}}
 \end{figure}
 
-We opted to use the default global planner, navfn, that comes with the move base package. The navfn package works by implementing Dijkstra’s algorithm on the costmap cells to find the optimal path\footnote{http://wiki.ros.org/navfn}.  Dijkstra’s algorithm is a common “shortest-path algorithm” for weighted graph problems.   Unlike the carrot planner, paths avoiding obstacles can be generated because of the formulation of the problem as a graph.  Simulation showed that this planner was sufficient for our purposes.\\
+The navfn package works by implementing Dijkstra’s algorithm on the costmap cells to find the optimal path \cite{navfn_package}.  Dijkstra’s algorithm is a common “shortest-path algorithm” for weighted graph problems.   Unlike the carrot planner, paths avoiding obstacles can be generated because of the formulation of the problem as a graph.\\
 
-The main difference between the global\_planner implementation and navfn is that an optimised A* algorithm is available in the global\_planner\footnote{http://wiki.ros.org/global\_planner}.  The A* algorithm is more efficient by employing the use of heuristics.  However, Dijkstra’s algorithm will find the optimal path because it employs breadth first search (considers all points).\\
+We opted to use the default global planner (global\_planner) that comes with the move base package.  The main difference between the global\_planner implementation and navfn is that an optimised A* algorithm is available in the global\_planner\footnote{http://wiki.ros.org/global\_planner}.  The A* algorithm is more efficient by employing the use of heuristics.  However, Dijkstra’s algorithm will find the optimal path because it employs breadth first search (considers all points).\\
 
-Having chosen a global planner, the purpose of a local planner may not be immediately obvious.  If we are generating a global costmap and the global path respects these limitations, why not just follow the global plan?  One important reason is the distinction between the local and global costmap.  The global costmap is constructed from a static map whereas the local costmap is created real time sensor data.  Therefore any moving obstacles or uncertain areas in the map will not be accounted for in the global plan.  The global planner does not take into account the dynamics of the robot and makes assumptions (e.g. circular robot) to ensure efficiency of the planning algorithm.  As a result the global path may produce a target trajectory that is overly optimistic such as rounding a corner too sharply or selecting a plan through a gap that is too narrow\footnote{http://wiki.ros.org/Papers/ICRA2010\_Marder-Eppstein}.  Therefore a local plan is needed to select achievable paths while avoiding collisions in a nearby vicinity to the robot.
+Having chosen a global planner, the purpose of a local planner may not be immediately obvious.  If we are generating a global costmap and the global path respects these limitations, why not just follow the global plan?  One important reason is the distinction between the local and global costmap.  The global costmap is constructed from a static map whereas the local costmap is created real time sensor data.  Therefore any moving obstacles or uncertain areas in the map will not be accounted for in the global plan.  The global planner does not take into account the dynamics of the robot and makes assumptions (e.g. circular robot) to ensure efficiency of the planning algorithm.  As a result the global path may produce a target trajectory that is overly optimistic such as rounding a corner too sharply or selecting a plan through a gap that is too narrow \cite{marder2010office}.  Therefore a local plan is needed to select achievable paths while avoiding collisions in a nearby vicinity to the robot.
 
 \subsection{Local Planner \& Costmap}
 
