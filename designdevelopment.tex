@@ -364,7 +364,7 @@ We note that both PX4 and ArduPilot support a communications protocol known as \
 
 Based on the above analysis, we decided to choose the PX4 flight controller software to be deployed on the onboard Raspberry Pi in order to control URSA.
 
-\subsection{Communications layer}
+\subsection{Communications layer}\label{subsec:comm_layer}
 We have now introduced all of the major system components for URSA. These components will be spread across two platforms - the UAV computer (Raspberry Pi) and an x64 based desktop base station. Similarly to the role which uORB plays for the PX4 flight controller, we require a mechanism for each of these components to exchange messages. Our options in this regard are to either design and develop our own communications backbone, or leverage an existing solution. In general, the requirements of the communications layer are as follows:
 
 \begin{itemize}
