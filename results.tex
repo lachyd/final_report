@@ -102,3 +102,39 @@ Many software solutions that package Patched-Based Multi-View Stereo (PVMS) and 
 In this report, we have presented the core elements of a system which allows indoor autonomous navigation of an unmanned aerial vehicle. Live vision is provided to a base station, and the system is suitable for deployment in hazardous environments which may be unsafe for humans. We have delivered on the majority of our scope to MFB, and have demonstrated the feasiblity of this novel approach to disaster management.
 
 \end{document}
+
+
+
+\subsection{Final Prototype Drone}
+Producing a final product drone is outside the scope of our project, however for completeness, additional points to consider when selecting/building a final product drone are mentioned here.  In contrast to the initial testing drone the final product prototype will place greater importance on battery life, performance and accuracy.
+
+\begin{table}[H]
+\centering
+\label{final_requirements}
+\begin{tabular}{p{6cm}p{8cm}}
+\toprule
+Features                           & Description                                                                         \\ \midrule
+Battery life \textgreater= 25 mins & Cannot be tethered                                                                  \\
+Payload \textgreater= 500g         & Should be able to carry sensor requirements                                         \\
+Operating range \textgreater=2km   & Should be able to be operated remotely within distance of long building.            \\
+ROS integration                    & Shorten development time.  Ability to interface with on-board sensors.              \\
+Max altitude \textgreater= 30m     & Should be able to climb to height of greater than two storey building               \\
+GPS                                & Will be used in positioning and flight path control                                 \\
+Size                               & Should allow for manoeuvrability indoors.  Less than typical door width $\sim$=0.8m \\
+Operating temperature              & Withstand temperatures in typical emergency situations                              \\ \bottomrule
+\end{tabular}
+\end{table}
+
+
+
+URSA is physical layer agnostic, in that our design should be capable of being deployed over any type of connection. However, there are some minimal specifications required for good performance. In particular, there are both latency and bandwidth constraints.\\ 
+
+In relation to the latency, it is difficult to measure the minimum latency required. The EKF in PX4 is sophisticated and designed to cope with localisation delays from GPS systems, which could be multiple seconds. Despite this, the deployment scenario contemplated by URSA means that delays in processing mapping or obstacle detection/avoidance of more than a few seconds is likely to lead to a crash. During our testing (described in detail under its respective chapter), we were able to achieve stable flight with base-station latency under \SI{2}{\second}. Further testing may be required to quantify hard limits in this regard.\\
+
+In relation to the bandwidth, by far the dominant contributor to bandwidth consumption is laser scan data. Our laser scanner generates 10 scans per second, each of which consists of around 600 range measurements. The range measurements are sent as 32-bit floating point values by ROS, which equates to \SI{192}{\kilo b\per\second}. To put this in contrast, the DJI Lightbridge 2 has a setting to stream at \SI{10}{\mega b\per\second} over an advertised range of \SI{0.7}{\kilo\meter}. Modern WiFi protocols can easily stream data at hundreds of megabits per second.\\
+
+Of course, these comparisons are not much use in an indoor context, since most benchmarks assume line of sight transmission. It is out of the scope of this project to test performance under field conditions, for example if a base station is outside a building and the UAV is inside the building. It is expected that this could be a very challenging environment to get a good signal, even at a relatively low \SI{192}{\kilo b\per\second}. The physical layer would therefore need extensive testing prior to any field deployment. \\
+
+Alternatively, in the case where a good network signal is found to be unfeasible, an alternative may be to increase the onboard computing power of the UAV. Whilst not available at the outset of this project, Intel has recently released a ready-to-fly drone based on the Aero platform \footnote{\url{https://click.intel.com/intel-aero-ready-to-fly-drone.html}}. This system uses a \SI{14}{\nano\meter} chip with approximately twice the clock speed and four times the RAM of the Raspberry Pi. It also supports an Intel 64-bit instruction set, which makes it highly likely that Cartographer would compile for this chip. Further, all of the routine flight control tasks have been implemented in a separate STM-32 microcontroller. This drone is not significantly more expensive than the Erle-Copter, and has a comparable estimated flight time.\\
+
+Some testing would be required to validate whether this drone could run a full SLAM and navigation stack; however even if this drone was incapable of doing so, it is clearly only a matter of time before a powerful enough mobile computer is released which can allow truly autonomous operation without the need for a base station. This would resolve any networking issues. \\

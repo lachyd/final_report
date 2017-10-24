@@ -23,27 +23,35 @@ An alternative solution to indoor monitoring of fire has been proposed in \cite{
 \section{Estimation algorithms}
 In addition to having application in indoor flight systems, algorithms which jointly optimise over both a position and map configuration have a wide variety of additional applications. For this reason, the literature relating to Simultaneous Localization and Mapping (SLAM) algorithms includes many non-UAV applications. The motivation behind using such an algorithm is explained in the following chapter. This section discusses some of the variants for solving the SLAM problem in the literature.\\
 
+While we did not write code to implement a SLAM algorithm for this project, the open source SLAM algorithm we eventually chose for URSA (Cartographer \cite{cart}) has hundreds of parameters available for configuration. The following details on SLAM algorithms is provided due to its utility in both understanding the technology options available and in configuring this component.
+
 \subsection{Filter based SLAM}
 The first detailed outline of the SLAM problem was \cite{smithcheese}. In this work, the authors used a filtering based approach with a state vector representing the current robot position, along with the position of a number of `landmarks'. A linear observation was approximated, allowing a Kalman Filter to be employed to recursively estimate the state.\\
 
-There have been a number of improvements in filter based approaches over the years. More complex non-linear observation models have led to filters which are required to linearize around operating points, leading to the application of extended Kalman filters (EKF). EKF based appraoches typically introduce signficant linearisation errors, which have led to some researchers employing Unscented Kalman Filters to solve the problem \cite{julier}. Others have attempted to change the state parameterisation of landmark coordinates in order to make them more tractable to linearisation in the EKF \cite{julier}.\\
+The extraction of landmarks will depend on the sensors used. For example, if a monocular vision sensor is used, landmarks may be extracted using a Harris corner/edge detector\footnote{A Harris detector works by calculating the sum of the squared difference between each pixel in an image and its surrounding pixels. The result of this sum-of-squared difference (obtained by approximation) is then analyzed for spatial derivatives in $x$ and $y$ directions. High derivatives in both directions indicate an image corner; high derivatives in a single direction indicate an image edge. See \cite{harris}}. If a depth camera is employed, features may instead relate to the 3D structure of the enviroment measured. The most important aspect of landmarks is that they can be correlated between samples, and recognised as unique if they are revisited in the future.
 
-However, despite advances in filter based SLAM, it still suffers from significant cumulative linearisation errors when employed on advanced models. Additionally, as more observations are made, more landmarks need to be added to the state vector. This requires a re-initialisation of the covariance matrix, and also causes the size of the matrix operations to grow as the algorithm continues to run. Eventually, this will exhaust computational resources. To circumvent these issues, modern filter-based SLAM algorithms impose limits on the landmarks which can be identified, as well as using dynamic submapping approaches to limit the area subject to mapping at any one time.
+There have been a number of improvements in filter based approaches over the years. More complex non-linear observation models have led to filters which are required to linearize around operating points, leading to the application of extended Kalman filters (EKF). A guide on the implementation of EKF based SLAM, including a detailed treatment of models and states used, and relevant diagrams, can be found at \cite{ekftutorial}.\\ 
+
+EKF based appraoches typically introduce signficant linearisation errors, which have led to some researchers employing Unscented Kalman Filters to solve the problem \cite{julier}. Others have attempted to change the state parameterisation of landmark coordinates in order to make them more tractable to linearisation in the EKF \cite{julier}.\\
+
+However, despite advances in filter based SLAM, it still suffers from significant cumulative linearisation errors when applied to models which correctly model the nonlinearities of feature observations or robot motion. Additionally, as more observations are made, more landmarks need to be added to the state vector. This requires a re-initialisation of the covariance matrix, and also causes the size of the matrix operations to grow as the algorithm continues to run. Eventually, this will exhaust computational resources. To circumvent these issues, modern filter-based SLAM algorithms impose limits on the landmarks which can be identified.\\
+
+Another common strategy is to use sub-mapping for landmarks which are a long way from the current location or which have not been observed for a long time. This approach essentially `archives' the states associated with these landmarks by removing them from the state vector and placing their estimates in memory. This reduces the size of the state vector and therefore the complexity of the filtering operations. A full discussion on submapping approaches can be found at \cite{slamoverview}.
 
 \subsection{Graph based SLAM}
 A recent alternative to filter based SLAM requires first re-imagining the SLAM problem as a factor graph. To explain this approach, assume $o(t)$ is the sensor observation at time $t$. This could be in the form of a laser scan, or a set of landmarks identified in the robot space. Further assume that a map exists which is described by $m:\mathbb Z^n\to\mathbb Z_2$, where $n$ is the dimension of the map (either 2 or 3). The output of this map indicates whether a discrete cell in $n$ dimension space is occupied. Finally, we introduce a robot position $r(t)$, where $r:\mathbb R\to\mathbb R_n$. Both $m$ and $r$ should be considered random variables.\\
 
-Given this notation, the joint probability distribution of robot/map configurations given sensor observations up to time $T$ can be expressed as $p(r(0), r(1), ... , r(T), m | o(0), o(1), ... , o(T))$, which we will refer to as $p(R,M|O)$. We clearly want to find estimates $\hat{R}$ and $\hat{M}$ which satisfy $[\hat{R} \ \hat{M}] = \arg \max_{[R \  M]} p(R,M|O)$. The exact form which this distribution takes depends on the nature of the observation data.
+Given this notation, the joint probability distribution of robot/map configurations given sensor observations up to time $T$ can be expressed as $p(r(0), r(1), ... , r(T), m | o(0), o(1), ... , o(T))$, which we will refer to as $p(R,M|O)$. We clearly want to find estimates $\hat{R}$ and $\hat{M}$ which satisfy $[\hat{R} \ \hat{M}] = \arg \max_{[R \  M]} p(R,M|O)$. The exact form which this distribution takes depends on the nature of the observation data.\\
 
-One way to construct this distribution is by using a factor graph. A factor graph assumes that there are conditionally independant terms within the joint distribution. For example, we might assume:
+However, one way to construct this distribution in a very general manner for a variety of possible sensors is by using a factor graph. A factor graph assumes that there are conditionally independant terms within the joint distribution. For example, we might assume:
 
 \begin{align*}
   p(R,M|O)&= p(r(0), r(1), ... , r(T-1), m | o(0), o(1), ... , o(T-1))p(r(T), m | o(T))
 \end{align*}
 
-That is, the conditional distribution of $r$ and $m$ at time $T$ is equal to the product of the conditional distribution at time $T-1$ with a new term which depends only on the distribution of $r$ and $m$ at time $T$, and is conditioned only on the new observation. In the factor graph, we draw each of these smaller probability distributions as edges connecting random variables (circles). The total distribution is then given by the product of each of these edges.\\ 
+That is, the conditional distribution of $r$ and $m$ at time $T$ is equal to the product of the conditional distribution at time $T-1$ with a new term which depends only on the distribution of $r$ and $m$ at time $T$, and is conditioned only on the new observation. In the factor graph, we draw each of these probability distributions with fewer terms as edges connecting random variables (circles). The total distribution is then given by the product of each of these edges.\\ 
 
-For 2D SLAM, the factors which are typically chosen are those connecting subsequent robot positions, and those connecting the map to robot positions. This is shown at Figure \ref{fig:graphSlam1}.
+For 2D SLAM, one possible model could be obtained by choosing factors which connect subsequent robot positions, and factors which connect the map to robot positions. This model is shown at Figure \ref{fig:graphSlam1}.
 
 \begin{figure}[H]
 \centering
@@ -51,11 +59,13 @@ For 2D SLAM, the factors which are typically chosen are those connecting subsequ
   \caption{Graph based SLAM\label{fig:graphSlam1}}
 \end{figure}
 
-In this representation, we have introduced $u$ and $g$. Clearly, $u$ is the joint distribution of two subsequent positions. This is often a gaussian distribution which does not use observation data; however models using odometry or inertial data also exist. In the case that no observation data is used, this is considered a `prior', and can be writen
+In this representation, we have introduced $u$ and $g$. Clearly, $u$ is the joint distribution of two subsequent positions. This might be assumed as a gaussian distribution which does not use any observation data; however models using odometry or inertial data also exist. In the case that no observation data is used, this is considered a `prior', and can be writen:
 
 \begin{align*}
     u(t-1,t) = p(r(t-1), r(t)). 
 \end{align*}
+
+It is the joint probability distribution of two subsequent robot positions.\\
 
 On the other hand, $g$ is a much more complex function. It is the joint distribution of both the map configuration and the robot's current position, given the current observation. It can be formally written as: 
 
@@ -63,7 +73,7 @@ On the other hand, $g$ is a much more complex function. It is the joint distribu
   g(t) = p(r(t),m | o(t))
 \end{align*}
 
-Clearly, the mean of this distribution will just be the current observation and does not provide any useful information. However, because $g(t)$ is optimized over all time, and because $m$ is not allowed to vary for all times under optimization, the output of this optimization provides meaningful data on both the position and map configuration.\\
+Clearly, the mean of this distribution for a single measurement will just be the current observation and does not provide any useful information. However, because $g(t)$ is optimized over all time (represented as all vertical edges in Figure \ref{fig:graphSlam1}) and because $m$ is not allowed to vary for all times under optimization, the output of this optimization provides meaningful data on both the position and map configuration.\\
 
 In practice, it is usually not viable to re-optimize this graph over all time every time new data is recieved. Typically in order to efficiently solve this factor graph, approximations are made. For example, it is usually assumed that subsequent measurements of the environment are independent given the robot's pose. This allows storing an estimate of the map in memory, rather than re-calculating the whole map every time new data is recieved.\\
 
@@ -87,8 +97,7 @@ In filter based SLAM, there is no easy way to implement this loop closure, parti
 
 The approach described above is very general, covers a wide variety of sensor configurations. For example, the authors in \cite{hong} and \cite{annaiyan} have applied this approach to visual sensors, while in \cite{vysotska} the authors used publically available mapping data to further describe the probability functions. \\
 
-Graph based SLAM is a major area of research with significant complexities which have not been discussed in full detail above. A more comprehensive summary of the details of implementing graph based SLAM algorithms can be found at \cite{grisetti}. \\
-
+Graph based SLAM is a major area of research with significant complexities which have not been discussed in full detail above. A more comprehensive summary of the details of implementing graph based SLAM algorithms can be found at \cite{grisetti}. 
 
 \section{Flight controllers}
 In the majority of cases, researchers in UAV systems do not develop full flight control systems. However, many authors do conduct extensive tuning or system identification in order to improve the performance of commercial or open-source controllers. For example, in \cite{feicui} a comprehensive system identification process was undertaken, using the measured frequency response of four seperate input variables to a commercial controller: $\delta_\theta$, $\delta_x$, $\delta_y$, $\delta_z$. These variables induced responses in the yaw, pitch, roll and average motor speed respectively. Performance metrics were not provided after entering the identified system data into the controller.\\
@@ -101,6 +110,7 @@ The major open source options for flight controllers are ArduPilot \footnote{\ur
 
 
 \section{Navigation algorithms}
+
 
 \end{document}
 
