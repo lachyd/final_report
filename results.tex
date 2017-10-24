@@ -20,14 +20,38 @@ Due to convenience, testing was predominantly undertaken in the Terabit Networki
 
 A large number of tests and edge cases were encountered, so the tests were not formalised in each case. However, a wide range of room configurations were set up and tested in to ensure that the scope objectives and behvaiours listed above were met. This way, improper behaviour, such as overshoot and the following of non-optimal trajectories were removed through continual amending of algorithms. All of the requirements established in the scope of the project were met, with return to base and landing in the event of low power functionalities yet to be fully tested.
 
+\subsection{Mapping Accuracy}
+
+One of the objectives of this project was to produce an accurate 2D map.  To test this capability measurements of a room were obtained via lasers scans from the drone and via tape measure.  Figure \ref{fig:measure} shows the 2D map output constructed from sequential laser scans.  Table \ref{table:measure} summarises the measurements obtained.  
+
+\begin{figure}[H]
+    \centering
+        \centering
+        \includegraphics[width=0.7\textwidth]{./imgs/map_measured.png}
+        \caption{}
+        \label{fig:measure}
+\end{figure}
+The results show that there is only a $2cm$ discrepancy between those measurements obtained by hand and those by laser.  The accuracy of a tape measure is with $\pm \frac{1}{2}$ the smallest measurement unit (1cm), therefore this can partly explain for the difference in measurements.  However, as the intended use of the map is high-level strategic planning a $2cm$ accuracy meets the project objective.
+\begin{table}[H]
+\centering
+\begin{tabular}{llll}
+& Tape Measure (m) & RVIZ (m) & Difference (m) \\
+A                & 4.65     & 4.67           & 0.02m \\
+B                & 1.11     & 1.13           & 0.02m \\
+C                & 0.56     & 0.54           & 0.02m
+\end{tabular}
+\caption{Measurements of room obtained by tape measure and laser scans}
+\label{table:measure}
+\end{table}
+
 \subsection{Avoiding Dynamic Obstacles}
-One objective outlined in the scope of the project was the ability to avoid dynamic obstacles.  To test this capability the following experiment was conducted:
+Another objective outlined in the scope of the project was the ability to avoid dynamic obstacles.  To test this capability the following experiment was conducted:
 \begin{enumerate}
     \item The drone was sent a goal setpoint from its current position
     \item The path from the current drone position to the goal setpoint was unobstructed
     \item As the drone was navigating along the path an obstacle (human) would obstruct it's path
 \end{enumerate}
-Success was measured if the drone was able to re-generate a trajectory around the obstacle, avoid a collision and reach the original goal setpoint.  The location of the dynamic obstacle was chosen such that a path still existed between the drone and the goal within reasonable margins of obstacles.  Figure \ref{fig:avoid_obs} shows the real-time output to RVIZ when the experiment was conducted in the TNL lab.
+Success was measured if the drone was able to re-generate a trajectory around the obstacle, avoid a collision and reach the original goal setpoint.  The location of the dynamic obstacle was chosen such that a path still existed between the drone and the goal within reasonable margins of obstacles.  Figure \ref{fig:avoid_obs} shows the real-time output to RVIZ when the experiment was conducted in the terabit networking lab (TNL).
 
 \begin{figure}[H]
     \centering
@@ -51,17 +75,14 @@ Figure \ref{fig:avoid_obs_1} shows the first stage of the experiment where the d
 From this experiment we conclude that the drone is able to avoid dynamic obstacles in a laboratory setting.  However further testing could still be carried out.  A large gap between the drone and obstacle (1 metre) gave time for the drone to respond.  In subsequent tests this gap should be reduced to find the limitations of the obstacle avoidance capability.
 
 \subsection{Turning Corners}
-To be able to navigate an environment one core capability required is to be able to turn corners.  Demonstrating ability to turn corners also illustrates the drones capability to navigate into previously unseen environments and avoid static obstacles.
+To be able to navigate an environment one core capability required is to be able to turn corners.  Demonstrating the ability to turn corners also illustrates the drones capability to navigate into previously unseen environments and avoid static obstacles.
 
 To evaluate the ability of the drone to turn corners the following experiment was conducted:
 \begin{enumerate}
-    \item place goal setpoint at an unseen location around a corner
-    \item record any collisions 
+    \item Place goal setpoint at an unseen location around a corner
+    \item Record any collisions 
 \end{enumerate}
 Success was measured if the drone was able to navigate to the goal setpoint without any collisions.
-This experiment resulted in a number of changes to the trajectory generator and cost functions to meet the criteria.
-
-
 
 \begin{figure}[H]
     \centering
@@ -80,7 +101,30 @@ This experiment resulted in a number of changes to the trajectory generator and 
     \caption{Experiment showing drone turning corners (1) Global setpoint\label{fig:avoid_obs}}
 \end{figure}
 
-\subsection{Narrow Passageways}
+Figure \ref{fig:avoid_obs_1} shows a global goal being placed for the drone in an unseen area around the corner.  Note the map has not yet been generated but a goal was able to be placed.  In figure \ref{fig:avoid_obs_1} the drone can be seen to have reached the setpoint.
+
+\subsection{Entering Room}
+
+A final experiment was conducted to test the drones ability to fly through narrow passages.  The format followed the same structure as the above tests.  A global goal placed inside a room and the drone was observed for collisions and ability to reach global goal.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.97\textwidth]{./imgs/entering_room/an_frame_1.jpg}
+        \caption{Frame 1: Global setpoint placed inside room}
+        \label{fig:enter_room_1}
+    \end{subfigure}%
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.97\textwidth]{./imgs/entering_room/an_frame_2.jpg}
+        \caption{Frame 2: Drone reached global setpoint}
+        \label{fig:enter_room_2}
+    \end{subfigure}
+    \caption{Experiment showing drone entering room (1) Drone position (2) Global setpoint\label{fig:enter_room}}
+\end{figure}
+
+Initially a a typical doorway width (0.8m) was used, but was found to be to narrow for the drone to pass through without any collisions.  The cause of this was a result of the drones overshoot.  The gap was increased until the drone was able to pass through safely.  A gap if $1m$ was found to be sufficiently large for the drone to pass through without collisions.
 
 \section{Future roadmap and limitations}
 In this section, potential future additions to the drone and limitations of the present prototype will be discussed.  It makes sense to discuss these items together, since many of the items on the future roadmap arise by being limitations of the current prototype. In many cases, these limitations are by design and are an artifact of the team intentionally restricting an otherwise open-ended scope. \\

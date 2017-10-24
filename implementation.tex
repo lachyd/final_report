@@ -22,7 +22,7 @@ In this section we discuss how sensor mounts were designed in 3D modelling softw
 \subsection{Combined Hokuyo \& Ultrasonic Mount}
 Initially we sought to use an off the shelf laser mount model downloaded from the internet. Erle Robotics provides a 3D model for a Hokuyo laser mount\footnote{https://github.com/erlerobot/3d-support}, however these are not compatible with the anti-vibration platform used in our edition of the Erle-copter. To obtain more reliable IMU data and steady video footage we opted to keep the anti-viration platform and produce our own scanner mount.\\
 
-Figure \ref{fig:mount1} shows all models generated for the first design iteration.  All components except (4) were modeled by the URSA team using empirical measurements. The anti-vibration platform was coarsely modeled. The forward facing camera mesh was obtained from open source Erle copter models to ensure clearance from the laser mount.\\
+Figure \ref{fig:mount1} shows all models generated for the first design iteration.  All components except (4) were modeled by the URSA team using empirical measurements. The anti-vibration platform was coarsely modeled. The forward facing camera mesh (only) was obtained from open source Erle copter models \cite{erle_camera_case} to ensure clearance from the laser mount.\\
 
 To maximise usage of available space the platform was designed to be dual purpose, housing both the scanner and ultrasonic module.  The platform for the ultrasonic component was raised to ensure the beam was not obstructed (15$^\circ$ fanout).
 
@@ -816,7 +816,7 @@ The inflation layer creates a buffer around the occupied cells by propagating co
     \caption{Inflation layer\label{fig:inflation_layer}}
 \end{figure}
 
-The exponential function can be tuned using the cost scaling factor and inflation radius parameter.  The cost scaling factor controls the rate at which the costs approach 1.  The inflation radius sets a hard boundary for which the inflation layer extends.  Figure \ref{fig:costmap_config} shows various configurations of the inflation layer.\\
+The exponential function can be tuned using the cost scaling factor and inflation radius parameter.  The cost scaling factor controls the rate at which the costs approach 1.  The inflation radius sets a hard boundary for which the inflation layer extends.  Figure \ref{fig:costmap_config} shows various configurations of the inflation layer.  Purple indicates the presence of an obstacle.  If the centre of the robot is in the teal area, the robot radius will have collided with the obstacle.  The gradient red to blue encodes the decaying exponential function with red being 252 and the darkest blue being 1.\\
 
 \begin{figure}[H]
     \centering
