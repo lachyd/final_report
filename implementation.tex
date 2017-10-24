@@ -647,9 +647,9 @@ The carrot planner is the simplest of the three and works by drawing a straight 
     \caption{Carrot planner\label{fig:carrot}}
 \end{figure}
 
-The navfn package works by implementing Dijkstra’s algorithm on the costmap cells to find the optimal path \cite{navfn_package}.  Dijkstra’s algorithm is a common “shortest-path algorithm” for weighted graph problems.   Unlike the carrot planner, paths avoiding obstacles can be generated because of the formulation of the problem as a graph.\\
+The navfn package works by implementing Dijkstra’s algorithm on the costmap cells to find the optimal path \footnote{See http://wiki.ros.org/navfn}.  Dijkstra’s algorithm is a common “shortest-path algorithm” for weighted graph problems.   Unlike the carrot planner, paths avoiding obstacles can be generated because of the formulation of the problem as a graph.\\
 
-We opted to use the default global planner (global\_planner) that comes with the move base package.  The main difference between the global\_planner implementation and navfn is that an optimised A* algorithm is available in the global\_planner\footnote{http://wiki.ros.org/global\_planner}.  The A* algorithm is more efficient by employing the use of heuristics.  However, Dijkstra’s algorithm will find the optimal path because it employs breadth first search (considers all points).\\
+We opted to use the default global planner (global\_planner) that comes with the move base package.  The main difference between the global\_planner implementation and navfn is that an optimised A* algorithm is available in the global\_planner \footnote{See http://wiki.ros.org/global\_planner}.  The A* algorithm is more efficient by employing the use of heuristics.  However, Dijkstra’s algorithm will find the optimal path because it employs breadth first search (considers all points).\\
 
 Having chosen a global planner, the purpose of a local planner may not be immediately obvious.  If we are generating a global costmap and the global path respects these limitations, why not just follow the global plan?  One important reason is the distinction between the local and global costmap.  The global costmap is constructed from a static map whereas the local costmap is created real time sensor data.  Therefore any moving obstacles or uncertain areas in the map will not be accounted for in the global plan.  The global planner does not take into account the dynamics of the robot and makes assumptions (e.g. circular robot) to ensure efficiency of the planning algorithm.  As a result the global path may produce a target trajectory that is overly optimistic such as rounding a corner too sharply or selecting a plan through a gap that is too narrow \cite{marder2010office}.  Therefore a local plan is needed to select achievable paths while avoiding collisions in a nearby vicinity to the robot.
 
@@ -665,15 +665,15 @@ A local planner can be thought of as consisting two main components – trajecto
     \item Repeat
 \end{itemize}
 
-The navigation stack is actually intended to work with differential drive or holonomic robots.  Velocity commands (dx, dy, dtheta) are interpretable by these robots and forward simulation is incorporated in local planners to generate trajectories.  To determine the types of commands compatible with our drone, we revisit sections XXXX and XXXX.  Communication with the PX4 flight controller is done via a high-level communications protocol known as MAVlink for UAVs.  The MAVRos package provides an interface between ROS and MAVlink.  One of the options available to us is the setpoint position, which can be configured to listen for the transform between the map coordinate frame and the setpoint.  Therefore a URSA local planner needs to be created that supports positional setpoints as the output navigational commands to the drone.\\
+The navigation stack is actually intended to work with differential drive or holonomic robots.  Velocity commands (dx, dy, dtheta) are interpretable by these robots and forward simulation is incorporated in local planners to generate trajectories.  Communication with the PX4 flight controller is done via a high-level communications protocol known as MAVlink for UAVs.  The MAVROS package provides an interface between ROS and MAVlink.  One of the options available to us is the setpoint position, which can be configured to listen for the transform between the map coordinate frame and the setpoint.  Therefore a URSA local planner needs to be created that supports positional setpoints as the output navigational commands to the drone.\\
 
 Considering the original output was velocity commands and we are now going to be using positional commands we are inevitably going to have to create our own cost functions to choose the optimal trajectory.\\
 
-There are two local planners are already available in the ROS ecosystem, the trajectory rollout and the dynamic window approaches.  These planners only differ in how they sample the control space\footnote{http://wiki.ros.org/base\_local\_planner}.  Given we will be replacing the velocity sampling, the distinction between these two planners is unimportant.  As a starting point for our URSA local planner we used the dwa local planner.  To create our own URSA local planner we modify the trajectory sample generator and trajectory cost function.
+There are two local planners are already available in the ROS ecosystem, the trajectory rollout and the dynamic window approaches.  These planners only differ in how they sample the control space \footnote{See http://wiki.ros.org/base\_local\_planner}.  Given we will be replacing the velocity sampling, the distinction between these two planners is unimportant.  As a starting point for our URSA local planner we used the dwa local planner.  To create our own URSA local planner we modify the trajectory sample generator and trajectory cost function.
 
 \subsubsection{Trajectory Generation} \label{sec: traj_gen}
 
-Our current problem is that we are able to generate a global path but currently have no function that can generate useful local paths.  To create our own local planner we adhere to the TrajectorySampleGenerator interface specified in the base\_local\_planner namespace\footnote{http://docs.ros.org/kinetic/api/base\_local\_planner/html/classbase\_\_local\_\_planner\_1\_1TrajectorySampleGenerator.html}.   The interface is relatively simple requiring only two functions (aside from constructors/deconstructors).
+Our current problem is that we are able to generate a global path but currently have no function that can generate useful local paths.  To create our own local planner we adhere to the TrajectorySampleGenerator interface specified in the base\_local\_planner namespace \footnote{See http://docs.ros.org/kinetic/api/base\_local\_planner/html/classbase\_\_local\_\_planner\_1\_1TrajectorySampleGenerator.html}.   The interface is relatively simple requiring only two functions (aside from constructors/deconstructors).
 
 \begin{lstlisting}[language=c++]
     virtual bool    hasMoreTrajectories()=0
@@ -688,12 +688,12 @@ Our ideal characteristics of a local planner is one that generates sensible path
     \centering
     \begin{subfigure}{0.33\textwidth}
         \centering
-        \includegraphics[width=0.9\textwidth]{imgs/sample_global.jpg}
+        \includegraphics[width=0.9\textwidth]{imgs/sample_global.png}
         \caption{Sampling global path to generate local trajectories}
     \end{subfigure}%
     \begin{subfigure}{0.33\textwidth}
         \centering
-        \includegraphics[width=0.9\textwidth]{imgs/one_local_traj.png}
+        \includegraphics[width=0.9\textwidth]{imgs/one_local_traj_large.png}
         \caption{Visualization of one local trajectory}
     \end{subfigure}
     \begin{subfigure}{0.33\textwidth}
@@ -706,12 +706,12 @@ Our ideal characteristics of a local planner is one that generates sensible path
 
 This approach performed well in most situations however, there were issues under certain circumstances. \\
 
-When drone was nearby the global target the local goal heading could be up to 180 degrees out of phase with the global goal heading\footnote{https://github.com/ursa-drone/ursa-server/issues/25}.  This is because headings were generated by ‘drawing’ a line between current drone position and local target.  If the drone drifted in front of the global target, the local target would be updated to point in the opposite direction.  This is a critical issue as it would prevent the drone from ever achieving goal position.  To solve this problem only the global path endpoint was used to generate a local trajectory when within some multiplier of the robot footprint.  Therefore the only possible local trajectory was a path to the global plan goal with the same heading.  This resolved the issue.
+When drone was nearby the global target the local goal heading could be up to 180 degrees out of phase with the global goal heading \footnote{See https://github.com/ursa-drone/ursa-server/issues/25}.  This is because headings were generated by ‘drawing’ a line between current drone position and local target.  If the drone drifted in front of the global target, the local target would be updated to point in the opposite direction.  This is a critical issue as it would prevent the drone from ever achieving goal position.  To solve this problem only the global path endpoint was used to generate a local trajectory when within some multiplier of the robot footprint.  Therefore the only possible local trajectory was a path to the global plan goal with the same heading.  This resolved the issue.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.4\textwidth]{imgs/out_of_phase.png}
-    \caption{Local plan goal out of phase with global plan goal\label{fig:lp_gp_out_of_phase}}
+    \includegraphics[width=0.4\textwidth]{imgs/out_of_phase_an.png}
+    \caption{Local plan goal out of phase with global plan goal.  (1) Local plan goal (2) Global plan goal (3) Drone footprint\label{fig:lp_gp_out_of_phase}}
 \end{figure}
 
 Another issue was identified when observing the drone turn corners in simulation.  Sampling only along the global path results in a restricted set of potential local paths.  This in turn lead to unsafe close rounding of corners because the global planner always selects the shortest path as discussed above.  There were other factors involved in close rounding of corners, which are covered in the cost functions section below.  To increase the sample space of potential trajectories, points perpendicular to the global plan were added.  These points were set to be some multiplier away from the global plan.  This solution presented the same issue; therefore the length of perpendicular points was set to be a uniform random variable.
@@ -853,7 +853,15 @@ The exponential function can be tuned using the cost scaling factor and inflatio
     \caption{Various configurations of the cost scaling factor (csf) and inflation radius (ir)}\label{fig:costmap_config}
 \end{figure}
 
-The ideal configuration of the costmap could be debated depending on situation and desired properties.  In some instances you may want the drone to take the safest path by preferring to choose paths through the middle of a room.  This could be achieved by setting the inflation radius to a large value so that the whole area is prescribed some cost value.  However, in large indoor areas this may cause our drone to lose its position estimation if the nearest walls our outside its maximum range (5.6m).  In the case that speed to goal is valued it may be preferable to have a smaller inflation radius to result in tighter rounding of corners.  In our implementation we set the inflation radius to be three times the radius.  However, even with this wide buffer, simulation revealed that our drone often opted for paths that merely satisfied the condition of avoiding collisions (Figure \ref{fig:tight_rounding}).  Ideally the behaviour we want is for our drone to prefer local paths furthest from an obstacle.  To implement this we turn to the obstacle cost function.
+The ideal configuration of the costmap could be debated depending on situation and desired properties.  In some instances you may want the drone to take the safest path by preferring to choose paths through the middle of a room.  This could be achieved by setting the inflation radius to a large value so that the whole area is prescribed some cost value.  However, in large indoor areas this may cause our drone to lose its position estimation if the nearest walls our outside its maximum range (5.6m).  In the case that speed to goal is valued it may be preferable to have a smaller inflation radius to result in tighter rounding of corners.  In our implementation we set the inflation radius to be three times the radius.  The cost scaling factor was chosen to give a cost of 1 at $\approx 5.4\cdot radius$
+\begin{align*}
+    cost\_decay &= 252*\exp(-1 \cdot csf \cdot (dist\_obst - radius))\\
+    log(\frac{1}{252}) &= -1 \cdot csf \cdot (5.4\cdot radius - radius)\\
+    log(252) &= csf \cdot 4.4\cdot0.5\\
+    csf &=    \frac{log(252)}{2.2}
+        \approx 2.5
+\end{align*}
+  However, even with this wide buffer, simulation revealed that our drone often opted for paths that merely satisfied the condition of avoiding collisions (Figure \ref{fig:tight_rounding}).  Ideally the behaviour we want is for our drone to prefer local paths furthest from an obstacle.  To implement this we turn to the obstacle cost function.
 
 \begin{figure}[H]
     \centering
@@ -861,40 +869,85 @@ The ideal configuration of the costmap could be debated depending on situation a
     \caption{Drone appears to ignore costmap when rounding corners.  Only collision avoidance appears to be satisfied.}\label{fig:tight_rounding}
 \end{figure}
 
-Having discussed the workings of costmaps we can now cover how they are utilised by the obstacle cost function to produce a score for local trajectories.  By default the obstacle cost function takes a local trajectory, robot footprint and costmap as inputs and returns a score.  The score is calculated by superimposing the footprint on each point of the local trajectory.  Each footprint passess through a set of cells with some associated cost.  The max of all these sets is the score returned (Figure \ref{fig:ocf_default}). \\
+Having discussed the workings of costmaps we can now cover how they are utilised by the obstacle cost function to produce a score for local trajectories.  By default the obstacle cost function takes a local trajectory, robot footprint and costmap as inputs and returns a score.  The score is calculated by superimposing the footprint on each point of the local trajectory.  Each footprint passes through a set of cells with some associated cost.  The max of all these sets is the score returned (Figure \ref{fig:ocf_default}). \\
 
-This operation of the obstacle cost function lead to the undesired behaviour of rounding corners too close\footnote{https://github.com/ursa-drone/ursa-server/issues/14}.  Trjectories that pass through lower cost (safe) areas can still receive high costs when taking into account the robots footprint.  Furthermore, all local trajectories have the same origin (robot).  This results in the same cost for all trajectories if the footprint is near a high cost area.  Modifying the obstacle cost function to only return the footprint cost at the radius of the drone appeared to fix this issue.
+This operation of the obstacle cost function lead to the undesired behaviour of rounding corners too close \footnote{See https://github.com/ursa-drone/ursa-server/issues/14}.  One way this behaviour arose was from all local trajectories having the same origin (robot).  Therefore if near an obstacle all local trajectories would receive the same max cost.  To fix this issue the obstacle cost function was calculated from the beginning of the drone footprint outwards.  Another issue arose from calculating the  obstacle cost by superimposing robot footprints along the local trajectory.  This resulted in the inflation radius being considered twice (inflation radius + robot radius).  Instead the behaviour was changed to return only the max cost at the robot origin \ref{fig:ocf_mod}
 
 \begin{figure}[H]
     \centering
     \begin{subfigure}{0.5\textwidth}
         \centering
-        \includegraphics[width=0.9\textwidth]{example-image-a}
+        \includegraphics[width=0.9\textwidth]{imgs/ocf_default.png}
         \caption{Default}
         \label{fig:ocf_default}
     \end{subfigure}%
     \begin{subfigure}{0.5\textwidth}
         \centering
-        \includegraphics[width=0.9\textwidth]{example-image-a}
+        \includegraphics[width=0.9\textwidth]{imgs/ocf_mod.png}
         \caption{Modified}
         \label{fig:ocf_mod}
     \end{subfigure}
     \caption{Behaviour of obstacle cost function before and after modification}\label{fig:ocf_comp}
 \end{figure}
 
-\paragraph{Ursa goal Cost Function}
+\paragraph{Ursa Goal Cost Function}
 The obstacle cost function has encoded our desired behaviour for the drone to avoid obstacles and give sufficient clearance.  If we solely relied on this cost function, no trajectories would be preferred when outside the inflation radius.
 Another important specification is for the chosen local trajectory to advance the drone furthest along the global plan.\\
 
-To achieve this Euclidean distance was calculated between the local trajectory endpoint and each point on the global path.  The smallest distance was used to identify the corresponding index along the global path.  A value between 1 and 0 was constructed from this index.  A value of 1 indicated local paths that made no progress along the global path.  A value of 0 indicated that the local plan endpoint was closest to the global plan endpoint.  These values adhere to the assumed operation of cost function prescribing a low score to the most desirable paths.
+To achieve this the global plan index used to generate a local trajectory was passed through a decaying exponential function.  In this way local trajectories generated from the furthest points along the global plan were prescribed the lowest cost.  \\
+
+% To achieve this Euclidean distance was calculated between the local trajectory endpoint and each point on the global path.  The smallest distance was used to identify the corresponding index along the global path.  A value between 1 and 0 was constructed from this index.  A value of 1 indicated local paths that made no progress along the global path.  A value of 0 indicated that the local plan endpoint was closest to the global plan endpoint.  These values adhere to the assumed operation of cost function prescribing a low score to the most desirable paths.
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.4\textwidth]{example-image-a}
+%     \caption{Operation of Ursa goal cost function}\label{fig:ugcf}
+% \end{figure}
+
+As mentioned above a final score for a local trajectory is determined by summing across all cost functions.  Therefore, the relative scaling between the obstacle cost function and ursa goal cost encodes some implicit preference between distance from obstacle and length of path.  The most desired behaviour being a trajectory that advances furthest along the global plan whilst being far from obstacles.  The least desired behaviour being a trajectory that does not advance very far along the global plan and is set close to obstacles.\\
+
+The difficulty is in choosing the trade-off between path length and distance from obstacles.  Multiple attempts were taken to design alternative cost functions to better control desired behaviour \footnote{See local\_costmap\_slider.m in appendix}.  However the most robust approach was to select the appropriate parameters of the goal cost function using a simplified model (figure \ref{fig:goal_cost_model}). 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.4\textwidth]{example-image-a}
-    \caption{Operation of Ursa goal cost function}\label{fig:ugcf}
+    \includegraphics[width=1\textwidth]{imgs/obstacle_vs_goal.png}
+    \caption{Model}\label{fig:goal_cost_model}
 \end{figure}
 
-As mentioned above a final score for a local trajectory is determined by summing across all cost functions.  Therefore, the relative scaling between the obstacle cost function and ursa goal cost encodes some implicit preference between distance from obstacle and length of path.  The most desired behaviour being a trajectory that advances furthest along the global plan whilst being far from obstacles.  The least desired behaviour being a trajectory that does not advance very far along the global plan and is set close to obstacles.  The difficulty is in choosing the trade-off between path length and distance from obstacles.  Multiple attempts were taken to design alternative cost functions to better control desired behaviour \footnote{See local\_costmap\_slider.m}.  However the most robust approach was to include a multiplier in the Ursa goal cost function.  By manipulating this multiplier in simulation acceptable behaviour was found.
+Figure \ref{fig:goal_cost_model} shows an obstacle modeled as a point with a surrounding cost determined by the inflation radius.  A global plan was drawn around the obstacle with uniform obstacle cost.  From the drones current position a number of straight line local trajectories could be drawn.  The cost of these trajectories is the sum of the obstacle and goal costs.
+
+\begin{align*}
+    \text{Obstacle cost function} &=  Ae^{-c\cdot csf}\\
+    \text{Goal cost function} &=    Be^{-d\gamma}\\
+    \text{Total cost} &=  Ae^{-c\cdot csf} + Be^{-d\gamma}\\
+    \intertext{A number of these variables have values...}
+    A &=    252 \tag{\text{From inflation radius definition}}\\
+    \alpha &=    \text{robot radius} = 0.5\\
+    r &=    \alpha + inflation\_radius = 0.5 + 1.5 = 2\tag{\text{Inflation radius set to 3$\alpha$}}\\
+    csf &= 2.5\\
+    \intertext{From the model we can find d in terms of c}
+    c   &=    rcos(\theta) - \alpha\\
+    \theta &=   cos^{-1}(\frac{c+\alpha}{r})\\
+    d   &=    2\theta r\\
+        &=    2rcos^{-1}(\frac{c+\alpha}{r})\\
+\end{align*}
+Therefore the only free parameters are c, B and $\gamma$.  As c encodes the distance between the inflation radius and the closest point along the local trajectory, we need to pick a suitable value for $c>0$ that encodes our qualitative preference.  Figure \ref{fig:ocf_total_cost} shows that the minimum total cost can be determined by varying the parameters B and $\lambda$.  Selecting the parameters, B=100 and $\lambda=1$ encodes our preference for the drone to prefer trajectories $\approx 1m$ from an obstacle.  Trajectories close to obstacles are penalised, likewise trajectories too far from an obstacle imply a short trajectory and are therefore also penalised.  It should be noted that $d$ is a monotonically decreasing function of $c$, therefore larger distance from obstacles implies a shorter trajectory.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{imgs/obstacle_vs_goal_B_100.jpg}
+        \caption{B = 100}
+    \end{subfigure}%
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{imgs/obstacle_vs_goal_B_504.jpg}
+        \caption{B = 504}
+    \end{subfigure}
+    \caption{Total cost = $Ae^{-c\cdot csf} + Be^{-d\gamma}$ as a funciton of $c, \lambda$ for different B values}\label{fig:ocf_total_cost}
+\end{figure}
+
 
 \paragraph{Turn Before Moving}
 Another desired behaviour for our drone is that it is facing the direction it moves.  There are two main reasons for this.  Firstly the laser scanner used only has 240$^\circ$ field of view.  If travelling in the direction of its blind spot there would be nothing preventing collision with obstacles.  Another important factor is the usage of the onboard camera.  Although not used in any position estimation algorithms the camera gives the operator the ability to remotely retrieve images from the environment.\\
