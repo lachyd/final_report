@@ -110,6 +110,20 @@ The major open source options for flight controllers are ArduPilot \footnote{\ur
 
 
 \section{Navigation algorithms}
+Autonomous navigation of mobile robots is a well-researched area due to its extensive applications \cite{mac2016heuristic}.  Path planning is a key component of autonomous navigation focussed on the task of generating an optimal path from the robots current position to a desired end state in cluttered environments \cite{raja2011path}.\\
+
+Path planning algorithms can be broadly segmented into local and global approaches.  \\
+
+Global strategies consider the entire map (either provided or generated in real-time) with the goal of producing a low resolution, high-level optimal path.  Common assumptions are to assume a static environment and the robot has a circular footprint to improve computational efficiency \cite{raja2011path}.  A number of algorithms have been proposed to achieve this task from simple implementation of Dijkstra’s algorithm and A* \cite{chen2017exploration}, \cite{marder2010office} to more complex genetic algorithms and neural networks \cite{shiller2000online}.  The main drawback of global strategies is their inability to respond to dynamic obstacles. \\
+
+Local strategies are concerned with generating paths in the near vicinity of the robot using information from on-board sensors.\\ 
+
+One simple approach to the local planning problem was proposed by \cite{savkin2014simple}.  The robot was given access to a binary variable indicating the presence of an obstacle (with an inflation radius) on its current heading.  If an obstacle is present it adjusts its heading to the centre of the nearest vacant heading.\\
+
+Another more sophisticated algorithm is the dynamic window approach to collision avoidance [2].  This approach considers the set of all reachable trajectories derived from a model of the robots dynamics and trajectory dynamics.  At each time step invalid trajectories are discounted and the best path is chosen based on deviation from current heading and distance from obstacles.  \\
+
+A combination of local and global approaches is generally recommended upon implementation to complement each of their weaknesses \cite{mac2016heuristic}.
+
 
 
 \end{document}
