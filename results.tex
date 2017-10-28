@@ -1,81 +1,131 @@
 \documentclass[capstone_report.tex]{subfiles}
 \begin{document}
-\chapter{Testing and conclusions}
-The previous chapters have focused on the intricacies of designing the URSA system. Occasionally, test results, failures, and improvements have been discussed. The purpose of this chapter is to provide a systematic discussion of all test results and key learnings. Limitations of the system are addressed, along with attractive targets for future development.\\
-
-Naturally, in a research intensive project such as URSA, we did not wait until the end of the project to undertake testing. Tests were undertaken daily as the project progressed. However, for the sake of readability, these results have been included under this chapter.
-
-\pagebreak
+\chapter{Testing and results}
+This chapter provides a systematic presentation of test cases and results. Our testing driven development methodology is present first, followed by mapping test cases and finally flight and navigation tests. 
 
 \section{Testing methodology}
-During testing, the project team relied heavily on the simulation environment. Code was only tested on a live UAV after it had been vetted by multiple team members in a simulation environment. This allowed us to reduce the impact of a catastrophic collision or damage to the drone.\\
+During testing, the project team relied heavily on the simulation environment. Code was only tested on a live UAV after it had been vetted by multiple team members in a simulation environment. This allowed us to reduce the chance of a catastrophic collision during a live flight.\\
 
-Despite this, we did still encounter some edge cases which almost caused collisions. For example, we found that in a live environment it took a number of seconds for the EKF position lock to become available. Attempting to takeoff before this time would lead to the drone attempting to fly into the ceiling. Fortunately in this case and many others, we caught this bug before the risk materialised. However, in future it may be advisable to have a more rigourous process in place for real-life indoor UAV testing.
+Despite this, we did still encounter some edge cases which almost caused collisions. For example, we found that in a live environment it took a number of seconds for the EKF position lock to become available. Attempting to takeoff before this time would lead to the drone attempting to fly into the ceiling. Fortunately in this case and many others, we caught this bug before the risk materialised. However, in future it may be advisable to have a more rigourous process in place for real-life indoor UAV testing.\\
 
+Real life testing was predominantly undertaken in the Terabit Networking Lab in the University’s Electrical Engineering faculty building, with chairs and people acting as obstructions and corners. A waypoint was set, the drone was held onto (to prevent accidental collisions) and the results were observed by the team.\\
 
-\section{Tests undertaken and results}
-With local dynamics account for with our constructed local planner and cost functions properly implemented, URSA was ready to navigate environments. Tests were undertaken to show that URSA was capable of some fundamental behaviours: avoiding collisions, avoiding obstacles with sufficient clearance, properly orienting itself before moving forwards, and lastly, reach its set destination. \\
+A large number of tests and edge cases were encountered, so the tests were not formalised in each case. However, a wide range of room configurations were set up and tested in to ensure that the scope objectives and behaviours listed above were met. Improper behaviour, such as overshoot and the following of non-optimal trajectories were removed through continual amending of algorithms.
 
-Due to convenience, testing was predominantly undertaken in the Terabit Networking Lab in the University’s Electrical Engineering faculty building, with chairs and people acting as obstructions and corners. A waypoint was set, the drone was held onto (to prevent accidental collisions) and the results were observed by the team.\\
+\section{Mapping tests and results}
 
-A large number of tests and edge cases were encountered, so the tests were not formalised in each case. However, a wide range of room configurations were set up and tested in to ensure that the scope objectives and behvaiours listed above were met. This way, improper behaviour, such as overshoot and the following of non-optimal trajectories were removed through continual amending of algorithms. All of the requirements established in the scope of the project were met, with return to base and landing in the event of low power functionalities yet to be fully tested.
+One of the primary objectives of this project was to produce an accurate 2D map in real-time.  To test this capability, we deployed the drone in a small room which had previously been measured by a tape measure. The test was undertaken in the same room at two different heights: \SI{40}{\centi\metre} and \SI{80}{\centi\metre}. The room was intentionally configured to have certain measurable obstacles.\\
 
-\subsection{Mapping Accuracy}
-
-One of the objectives of this project was to produce an accurate 2D map.  To test this capability measurements of a room were obtained via lasers scans from the drone and via tape measure.  Figure \ref{fig:measure} shows the 2D map output constructed from sequential laser scans.  Table \ref{table:measure} summarises the measurements obtained.  
+Figure \ref{fig:map_env_imgs} shows photographs of the test environment at 80cm and 40cm respectively. In each case, URSA was instructed to rotate and move around the room until a measurable map was generated. URSA was then instructed to land and the map generated by URSA was compared to the previous tape measurements collected.\\
 
 \begin{figure}[H]
     \centering
+    \begin{subfigure}{0.5\textwidth}
         \centering
-        \includegraphics[width=0.7\textwidth]{./imgs/map_measured.png}
-        \caption{}
-        \label{fig:measure}
+        \includegraphics[width=0.9\textwidth]{./imgs/mapping/img_40cm.jpg}
+        \caption{40cm}
+    \end{subfigure}%
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{./imgs/mapping/img_80cm.jpg}
+        \caption{80cm}
+    \end{subfigure}
+    \caption{Photos of experimental setup at multiple flight altitudes}
+    \label{fig:map_env_imgs}
 \end{figure}
-The results show that there is only a $2cm$ discrepancy between those measurements obtained by hand and those by laser.  The accuracy of a tape measure is with $\pm \frac{1}{2}$ the smallest measurement unit (1cm), therefore this can partly explain for the difference in measurements.  However, as the intended use of the map is high-level strategic planning a $2cm$ accuracy meets the project objective.
+
+Figure \ref{fig:map_env_RVIZ} shows the 2D map output constructed from sequential laser scans at each 40cm and 80cm. Table \ref{table:measure} summarises the measurements obtained.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{./imgs/mapping/an_map_40cm_arrows.png}
+        \caption{40cm}
+    \end{subfigure}%
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[width=0.9\textwidth]{./imgs/mapping/an_map_80cm_arrows.png}
+        \caption{80cm}
+    \end{subfigure}
+    \caption{Measurements obtained using SLAM algorithm output}
+    \label{fig:map_env_RVIZ}
+\end{figure}
+
+The results show that there is only a $2cm$ discrepancy between those measurements obtained by hand and those by laser.  The accuracy of a tape measure is with $\pm \frac{1}{2}$ the smallest measurement unit (1cm), therefore this can partly explain for the difference in measurements.  However, as the intended use of the map is high-level strategic planning a $2cm$ accuracy meets the project objective. \\
+
 \begin{table}[H]
 \centering
-\begin{tabular}{llll}
-& Tape Measure (m) & RVIZ (m) & Difference (m) \\
-A                & 4.65     & 4.67           & 0.02m \\
-B                & 1.11     & 1.13           & 0.02m \\
-C                & 0.56     & 0.54           & 0.02m
+\begin{tabular}{@{}|ccc|@{}}
+\toprule
+&Tape Measure (m) & Mapping (m)       \\ \midrule
+A            & 4.65    & 4.67 \\
+B            & 0.82    & 0.81 \\
+C            & 0.4     & 0.39 \\
+D            & 0.56    & 0.54 \\
+E            & 0.75    & 0.75 \\
+F            & 1.68    & 1.67 \\
+G            & 3.9     & 3.94 \\
+H            & 1.7     & 1.69 \\
+I            & 1.57    & 1.53 \\
+J            & 0.73    & 0.75 \\
+K            & 1.12    & 1.06 \\ \bottomrule
 \end{tabular}
 \caption{Measurements of room obtained by tape measure and laser scans}
 \label{table:measure}
 \end{table}
 
+Further analysis of the results shows some clear features which can be observed by comparing the maps at 80cm and 40cm. For example, in the map at 80cm the large foam block is clearly visible in the map (marked D in Figure \ref{fig:map_env_RVIZ}). In contrast, on the 40cm map the legs of the table generate three distinct `dots' on the map at around the same location (marked H in Figure \ref{fig:map_env_RVIZ}).\\
+
+Furthermore, in \ref{fig:map_env_RVIZ} there is clearly a discrepancy between the measurement marked G at 80cm and the measurements around I and J at 40cm. This is due to a cupboard which is in the corner of the room, observable at 40cm but not 80cm.\\
+
+Two additional features of Figure \ref{fig:map_env_RVIZ} are worth identifying. The first, marked L in the 80cm results, show a blurry patch which might represent an object. This is actually the result of the drone testers moving near the drone during the test. Since they are not always detected (we moved in and out of the room during the test) the SLAM algorithm is unsure whether this space is actually occupied.\\
+
+The second feature is marked M in Figure \ref{fig:map_env_RVIZ}. This patch of obstacles corresponds to chairs which have been turned over (visible in Figure \ref{fig:map_env_imgs}). These obstacles are observable at 40cm but not 80cm.\\
+
+The analysis also reveals some significant limitations of the mapping scheme chosen. As can be seen in Figure \ref{fig:map_env_imgs}, at both 80cm and 40cm URSA can clearly not navigate over or under the table in the room. Despite this, the table does not feature in either map. This is a significant limitation caused by using 2D mapping rather than 3D mapping.\\
+
+Additionally, in Figure \ref{fig:map_env_RVIZ} near label E, a blurry region of uncertainty can clearly be identified. This is associated with a glass window pane which can be observed in Figure \ref{fig:map_env_imgs}. The laser scanner is not able to detect translucent objects, another significant limitation.
+
+\section{Flight navigation tests and results}
+In addition to mapping, it is important that URSA be able to properly navigate complex environments. Tests were undertaken to show that URSA was capable of some fundamental navigation behaviours: avoiding collisions, avoiding obstacles with sufficient clearance, properly orienting itself before moving forwards, and lastly, reach its set destination.\\
+
+Videos for each of the experiments conducted below can be found in the appendix.
+
 \subsection{Avoiding Dynamic Obstacles}
-Another objective outlined in the scope of the project was the ability to avoid dynamic obstacles.  To test this capability the following experiment was conducted:
+To test URSA's capability to avoid moving obstacles the following experiment was conducted:
 \begin{enumerate}
     \item The drone was sent a goal setpoint from its current position
     \item The path from the current drone position to the goal setpoint was unobstructed
-    \item As the drone was navigating along the path an obstacle (human) would obstruct it's path
+    \item As the drone was navigating along the path an obstacle (human) would obstruct its path
 \end{enumerate}
-Success was measured if the drone was able to re-generate a trajectory around the obstacle, avoid a collision and reach the original goal setpoint.  The location of the dynamic obstacle was chosen such that a path still existed between the drone and the goal within reasonable margins of obstacles.  Figure \ref{fig:avoid_obs} shows the real-time output to RVIZ when the experiment was conducted in the terabit networking lab (TNL).
+Success was measured if the drone was able to generate a trajectory around the obstacle, avoid a collision and reach the original goal setpoint.  The location of the dynamic obstacle was chosen such that a path still existed between the drone and the goal within reasonable margins of obstacles.  Figure \ref{fig:avoid_obs} shows the real-time output to RVIZ when the experiment was conducted in the Terabit Networking Lab (TNL).
 
 \begin{figure}[H]
     \centering
-    \begin{subfigure}{0.5\textwidth}
+    \begin{subfigure}[b]{0.5\textwidth}
         \centering
         \includegraphics[width=0.97\textwidth]{./imgs/dynamic_objects/an_frame_1.png}
         \caption{Frame 1: Generated trajectory to goal}
         \label{fig:avoid_obs_1}
     \end{subfigure}%
-    \begin{subfigure}{0.5\textwidth}
+    \begin{subfigure}[b]{0.5\textwidth}
         \centering
         \includegraphics[width=0.97\textwidth]{./imgs/dynamic_objects/an_frame_2.png}
-        \caption{Frame 2: Re-generated trajectory to goal to avoid obstacle}
+        \caption{Frame 2: Re-generated trajectory}
         \label{fig:avoid_obs_2}
     \end{subfigure}
     \caption{Experiment conducted showing drone avoiding dynamic obstacles.  (1) Drone location (2) Local trajectory goal (3) Global goal (4) Dynamic obstacle\label{fig:avoid_obs}}
 \end{figure}
 
-Figure \ref{fig:avoid_obs_1} shows the first stage of the experiment where the drone was asked to generate a trajectory from it's current position to the global goal.  During it's progression along the trajectory an obstacle obstructed it's path.   Figure \ref{fig:avoid_obs_2} shows that a new local trajectory goal was able to be generated to give suitable clearance from the obstacle.  The drone was able to reach the original goal setpoint.\\
+Figure \ref{fig:avoid_obs_1} shows the first stage of the experiment where the drone was asked to generate a trajectory from it's current position to the global goal.  During it's progression along the trajectory an obstacle obstructed its path.   Figure \ref{fig:avoid_obs_2} shows that a new local trajectory goal was able to be generated to give suitable clearance from the obstacle.  The drone was able to reach the original goal setpoint.\\
 
-From this experiment we conclude that the drone is able to avoid dynamic obstacles in a laboratory setting.  However further testing could still be carried out.  A large gap between the drone and obstacle (1 metre) gave time for the drone to respond.  In subsequent tests this gap should be reduced to find the limitations of the obstacle avoidance capability.
+It is worth noting that the global plan remained constant during the UAV avoiding the dynamic obstacle. This is expected behaviour - the global plan accounts only for static obstacles with dynamic obstacles being avoided by the local plan. A significant deviation in the local plan is clearly observed.\\
+
+From this experiment we conclude that the drone is able to avoid dynamic obstacles in a laboratory setting.  However further testing could still be carried out.  A large gap between the drone and obstacle (1 metre) gave time for the drone to respond.  In subsequent tests this gap should be reduced to find the limitations of the dynamic obstacle avoidance capability.
 
 \subsection{Turning Corners}
-To be able to navigate an environment one core capability required is to be able to turn corners.  Demonstrating the ability to turn corners also illustrates the drones capability to navigate into previously unseen environments and avoid static obstacles.
+To be able to navigate an environment one core capability required is to be able to turn corners.  Demonstrating the ability to turn corners also illustrates the drones capability to navigate into previously unseen environments and avoid static obstacles.\\
 
 To evaluate the ability of the drone to turn corners the following experiment was conducted:
 \begin{enumerate}
@@ -86,13 +136,13 @@ Success was measured if the drone was able to navigate to the goal setpoint with
 
 \begin{figure}[H]
     \centering
-    \begin{subfigure}{0.5\textwidth}
+    \begin{subfigure}[b]{0.5\textwidth}
         \centering
         \includegraphics[width=0.97\textwidth]{./imgs/turn_corners/an_frame_1.jpg}
-        \caption{Frame 1: Global setpoint placed in unseen environment around corner}
+        \caption{Frame 1: Setpoint placed around corner}
         \label{fig:avoid_obs_1}
     \end{subfigure}%
-    \begin{subfigure}{0.5\textwidth}
+    \begin{subfigure}[b]{0.5\textwidth}
         \centering
         \includegraphics[width=0.97\textwidth]{./imgs/turn_corners/an_frame_2.jpg}
         \caption{Frame 2: Drone reached global setpoint}
@@ -109,76 +159,21 @@ A final experiment was conducted to test the drones ability to fly through narro
 
 \begin{figure}[H]
     \centering
-    \begin{subfigure}{0.5\textwidth}
+    \begin{subfigure}[b]{0.5\textwidth}
         \centering
         \includegraphics[width=0.97\textwidth]{./imgs/entering_room/an_frame_1.jpg}
         \caption{Frame 1: Global setpoint placed inside room}
         \label{fig:enter_room_1}
     \end{subfigure}%
-    \begin{subfigure}{0.5\textwidth}
+    \begin{subfigure}[b]{0.5\textwidth}
         \centering
         \includegraphics[width=0.97\textwidth]{./imgs/entering_room/an_frame_2.jpg}
         \caption{Frame 2: Drone reached global setpoint}
         \label{fig:enter_room_2}
     \end{subfigure}
-    \caption{Experiment showing drone entering room (1) Drone position (2) Global setpoint\label{fig:enter_room}}
+    \caption{Experiment showing drone entering room (1) Drone position (2) Global setpoint}
+    \label{fig:enter_room}
 \end{figure}
 
-Initially a a typical doorway width (0.8m) was used, but was found to be to narrow for the drone to pass through without any collisions.  The cause of this was a result of the drones overshoot.  The gap was increased until the drone was able to pass through safely.  A gap if $1m$ was found to be sufficiently large for the drone to pass through without collisions.
-
-\section{Future roadmap and limitations}
-In this section, potential future additions to the drone and limitations of the present prototype will be discussed.  It makes sense to discuss these items together, since many of the items on the future roadmap arise by being limitations of the current prototype. In many cases, these limitations are by design and are an artifact of the team intentionally restricting an otherwise open-ended scope. \\
-
-As outlined in the scope, the UAV prototype is limited to use in an indoor environment, with no considerations for dynamic variables. For our UAV to be able to meet the long-term goals of the MFB and operate in real-life disaster scenarios, the following features must be explored:
-\begin{itemize}
-\item 3D-Mapping: Due to limitations in processing power and bitrate of the communication link, it was decided that 2D mapping was most appropriate for our project (see Hardware selection and Drone selection ), leading to the use of a single Hokuyo URG-04LX-UG01 LIDAR scanner, capable of taking 2D ‘cross-sections’ of a 3D model by operating at different set altitudes. Fundamentally, less information is captured, with obstacles that cover a small range of altitudes potentially avoiding capture by the LIDAR scanner altogether resulting in less accurate information about the environment. For the drone to understand its surroundings fully, means of modelling its surroundings as a 3D space is required.  \\
-
-Obtaining and using a more powerful processor and/or a higher capacity communication channel to a terrestrial base station; a relatively minor task, a simple solution is to use a 3D scanner, to generate a dense point cloud that represents the environment. These point clouds may be directly analysed and rendered as an environment layout, or converted to mesh models to increase object coherence and the usefulness of the outputted data. \\
-
-This can also be achieved in the visual domain, using the Erlecopter’s onboard camera or another passive visual camera to simulate Structure from Motion (SfM) photogrammetric techniques. By moving through an environment (whilst periodically taking photos), and having navigation algorithms centred on directing the UAV along the detected boundaries of the environment, facing towards the centre where possible, local features in the environment can be detected. Commonly, the Difference of Gaussian (DoG) algorithm is used to help identify features, discarding a large range of spatial frequencies in an image, preserving only the spatial information that represent the edges of a feature. Random Sample Consensus (RANSAC) algorithm is then applied to remove incorrectly matched features, by iteratively estimating a mathematical model for the dataset produced and removing outliers. Based on memory and processing power available, this SfM method can be carried out globally; where the constituent samples of an environment are reconstructed at the same time or incrementally; solving image correspondence on a sample-to-sample basis. Realistically, an out-of-core solution is required as an intermediate approach, to combine partial reconstructions of sub-environments (e.g. rooms) due to wide range of environments that the UAV will operate in.\\
-
-Many software solutions that package Patched-Based Multi-View Stereo (PVMS) and Clustering Views for Multi-view Stereo (CMVS) exist and can be integrated into UAV software, to save time.
-\item Resistance to weathering and heat: As disaster management UAVs should be able to reach places that humans can’t, future UAV developments based off our prototype should be robust against any environment. For MFB purposes, such a UAV should be flame retardant and fireproof. An aluminium frame structure is recommended for its high melting point and light weight. However, despite its comparatively larger specific heat capacity
-\item Multi-UAV systems: To enhance efficiency of the mapping process and reduce some of the fundamental limitations that are present in our prototype, namely processing power, many UAVs, behaving as nodes can be used. Multi-hop communication to cover disaster-affected areas may prove  can communicate rapidly to cover a greater area.
-\end{itemize}
-
-\section{Conclusion}
-In this report, we have presented the core elements of a system which allows indoor autonomous navigation of an unmanned aerial vehicle. Live vision is provided to a base station, and the system is suitable for deployment in hazardous environments which may be unsafe for humans. We have delivered on the majority of our scope to MFB, and have demonstrated the feasiblity of this novel approach to disaster management.
-
+Initially a a typical doorway width (0.8m) was used, but was found to be too narrow for the drone to pass through without any collisions.  The cause of this was a result of the drones overshoot.  The gap was increased until the drone was able to pass through safely.  A gap of $1m$ was found to be sufficiently large for the drone to pass through without collisions.
 \end{document}
-
-
-
-\subsection{Final Prototype Drone}
-Producing a final product drone is outside the scope of our project, however for completeness, additional points to consider when selecting/building a final product drone are mentioned here.  In contrast to the initial testing drone the final product prototype will place greater importance on battery life, performance and accuracy.
-
-\begin{table}[H]
-\centering
-\label{final_requirements}
-\begin{tabular}{p{6cm}p{8cm}}
-\toprule
-Features                           & Description                                                                         \\ \midrule
-Battery life \textgreater= 25 mins & Cannot be tethered                                                                  \\
-Payload \textgreater= 500g         & Should be able to carry sensor requirements                                         \\
-Operating range \textgreater=2km   & Should be able to be operated remotely within distance of long building.            \\
-ROS integration                    & Shorten development time.  Ability to interface with on-board sensors.              \\
-Max altitude \textgreater= 30m     & Should be able to climb to height of greater than two storey building               \\
-GPS                                & Will be used in positioning and flight path control                                 \\
-Size                               & Should allow for manoeuvrability indoors.  Less than typical door width $\sim$=0.8m \\
-Operating temperature              & Withstand temperatures in typical emergency situations                              \\ \bottomrule
-\end{tabular}
-\end{table}
-
-
-
-URSA is physical layer agnostic, in that our design should be capable of being deployed over any type of connection. However, there are some minimal specifications required for good performance. In particular, there are both latency and bandwidth constraints.\\ 
-
-In relation to the latency, it is difficult to measure the minimum latency required. The EKF in PX4 is sophisticated and designed to cope with localisation delays from GPS systems, which could be multiple seconds. Despite this, the deployment scenario contemplated by URSA means that delays in processing mapping or obstacle detection/avoidance of more than a few seconds is likely to lead to a crash. During our testing (described in detail under its respective chapter), we were able to achieve stable flight with base-station latency under \SI{2}{\second}. Further testing may be required to quantify hard limits in this regard.\\
-
-In relation to the bandwidth, by far the dominant contributor to bandwidth consumption is laser scan data. Our laser scanner generates 10 scans per second, each of which consists of around 600 range measurements. The range measurements are sent as 32-bit floating point values by ROS, which equates to \SI{192}{\kilo b\per\second}. To put this in contrast, the DJI Lightbridge 2 has a setting to stream at \SI{10}{\mega b\per\second} over an advertised range of \SI{0.7}{\kilo\meter}. Modern WiFi protocols can easily stream data at hundreds of megabits per second.\\
-
-Of course, these comparisons are not much use in an indoor context, since most benchmarks assume line of sight transmission. It is out of the scope of this project to test performance under field conditions, for example if a base station is outside a building and the UAV is inside the building. It is expected that this could be a very challenging environment to get a good signal, even at a relatively low \SI{192}{\kilo b\per\second}. The physical layer would therefore need extensive testing prior to any field deployment. \\
-
-Alternatively, in the case where a good network signal is found to be unfeasible, an alternative may be to increase the onboard computing power of the UAV. Whilst not available at the outset of this project, Intel has recently released a ready-to-fly drone based on the Aero platform \footnote{\url{https://click.intel.com/intel-aero-ready-to-fly-drone.html}}. This system uses a \SI{14}{\nano\meter} chip with approximately twice the clock speed and four times the RAM of the Raspberry Pi. It also supports an Intel 64-bit instruction set, which makes it highly likely that Cartographer would compile for this chip. Further, all of the routine flight control tasks have been implemented in a separate STM-32 microcontroller. This drone is not significantly more expensive than the Erle-Copter, and has a comparable estimated flight time.\\
-
-Some testing would be required to validate whether this drone could run a full SLAM and navigation stack; however even if this drone was incapable of doing so, it is clearly only a matter of time before a powerful enough mobile computer is released which can allow truly autonomous operation without the need for a base station. This would resolve any networking issues. \\

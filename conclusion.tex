@@ -1,0 +1,78 @@
+\documentclass[capstone_report.tex]{subfiles}
+\begin{document}
+\chapter{Discussion and conclusion}
+This chapter summarises the project's major achievements and outlines a roadmap for future developmnet on this technology. Finally, a conclusion is reached regarding the contributions made by this project.
+
+\section{Discussion}
+\subsection{Major achievements}
+The URSA project was broadly successful in that the scope of the project was realized. In the results chapter, we have presented an autonomous aerial vehicle capable of navigating to destinations and constructing a 2D floor map as it moves in its environment.\\
+
+We have demonstrated that the quantitative difference between generated maps and ground truth is very low, and certainly within a level of accuracy that would be useful for emergency services personnel on the ground. Further, we have tested the drone in a variety of challenging navigation tasks and found that our approach is both robust and extendable.
+
+\subsection{Limitations}
+Despite the success of the project in achieving its objectives, there are still a number of limitations which would prevent it from being readily deployed in an emergency services situation. Some of these have already been identified when introducing design decisions or presenting test results. However, they are summarised below for completeness.\\
+
+\begin{itemize}
+\item URSA is unable to map and navigate in 3D. Many environments do not have planar constancy over the range of altitudes the drone can fly, and therefore would not be appropriate for URSA in its current form.
+\item Many surfaces do not properly reflect LiDAR signals. For example, we found during tests that glass panes were not properly mapped.
+\item URSA requires base-station computation and therefore a reliable signal link. This cannot always be guaranteed in an emergency situation. Potential improvements to mitigate this are discussed further below.
+\item URSA is not able to withstand very harsh environmental conditions. It would be expected that a drone to be employed in an indoor fire situation should be hardened against very high temperatures. This relates to both the chassis and actuators, as well as sensor reliability.
+\item The controller used was an off-the-shelf UAV controller and some drift was observed. This required us to increase the margin of error when navigating obstacles and meant we could only fly through gaps of around 1m. Higher speeds and tighter gaps might be possible with a more robust and accurate custom designed controller.
+\end{itemize}
+
+\subsection{Future development}
+There are many potential areas where URSA can be improved. This section summarises some of the areas where we see most potential for future research and development of URSA.
+
+\subsubsection{Networking and communications link}
+URSA is physical layer agnostic, in that our design should be capable of being deployed over any type of connection. However, there are some minimal specifications required for good performance. In particular, there are both latency and bandwidth constraints.\\ 
+
+In relation to the latency, it is difficult to measure the minimum latency required. The EKF in PX4 is sophisticated and designed to cope with localisation delays from GPS systems, which could be multiple seconds. Despite this, the deployment scenario contemplated by URSA means that delays in processing mapping or obstacle detection/avoidance of more than a few seconds is likely to lead to a crash. During our testing (described in detail under its respective chapter), we were able to achieve stable flight with base-station latency under \SI{2}{\second}. Further testing may be required to quantify hard limits in this regard.\\
+
+In relation to the bandwidth, by far the dominant contributor to bandwidth consumption is laser scan data. Our laser scanner generates 10 scans per second, each of which consists of around 600 range measurements. The range measurements are sent as 32-bit floating point values by ROS, which equates to \SI{192}{\kilo b\per\second}. To put this in contrast, the DJI Lightbridge 2 has a setting to stream at \SI{10}{\mega b\per\second} over an advertised range of \SI{0.7}{\kilo\meter}. Modern WiFi protocols can easily stream data at hundreds of megabits per second.\\
+
+These comparisons are not much use in an indoor context, since most benchmarks assume line of sight transmission. It is out of the scope of this project to test performance under field conditions, for example if a base station is outside a building and the UAV is inside the building. It is expected that this could be a very challenging environment to get a good signal, even at a relatively low \SI{192}{\kilo b\per\second}. The physical layer would therefore need extensive testing prior to any field deployment. \\
+
+Alternatively, in the case where a good network signal is found to be unfeasible, an alternative may be to increase the onboard computing power of the UAV. Whilst not available at the outset of this project, Intel has recently released a ready-to-fly drone based on the Aero platform \footnote{\url{https://click.intel.com/intel-aero-ready-to-fly-drone.html}}. This system uses a \SI{14}{\nano\meter} chip with approximately twice the clock speed and four times the RAM of the Raspberry Pi. It also supports an Intel 64-bit instruction set, which makes it highly likely that Cartographer would compile for this chip. Further, all of the routine flight control tasks have been implemented in a separate STM-32 microcontroller. This drone is not significantly more expensive than the Erle-Copter, and has a comparable estimated flight time.\\
+
+Some testing would be required to validate whether this drone could run a full SLAM and navigation stack; however even if this drone was incapable of doing so, it is clearly only a matter of time before a powerful enough mobile computer is released which can allow truly autonomous operation without the need for a base station. This would resolve any networking issues. \\
+
+\subsubsection{Final drone selection}
+Producing a final product drone is outside the scope of our project, and this was reflected in our choice of the budget Erle-Copter platform. However for completeness, additional points to consider when selecting/building a final product drone are mentioned here.  In contrast to the initial testing drone the final product prototype will place greater importance on battery life, performance and accuracy.
+
+\begin{table}[H]
+\centering
+\label{final_requirements}
+\begin{tabular}{p{6cm}p{8cm}}
+\toprule
+Features                           & Description                                                                         \\ \midrule
+Battery life \textgreater= 25 mins & Cannot be tethered                                                                  \\
+Payload \textgreater= 500g         & Should be able to carry sensor requirements                                         \\
+Operating range \textgreater=2km   & Should be able to be operated remotely within distance of long building.            \\
+ROS integration                    & Shorten development time.  Ability to interface with on-board sensors.              \\
+Max altitude \textgreater= 30m     & Should be able to climb to height of greater than two storey building               \\
+GPS                                & Will be used in positioning and flight path control                                 \\
+Size                               & Should allow for manoeuvrability indoors.  Less than typical door width $\sim$=0.8m \\
+Operating temperature              & Withstand temperatures in typical emergency situations                              \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Multi-level mapping}
+As outlined in the discussion on limitations, currently URSA can only map in 2D. This is not appropriate for many environments and the long term solution is a full 3D mapping and navigation solution. However, in the interim it may be possible to extend the 2D paradigm to cover multiple layers. \\
+
+Such a solution would consist of URSA generating a new 2D map for discrete `chunks' of altitude. For example, a different map might be generated for 40cm, 80cm and 120cm above the ground. When navigating, URSA could combine these maps to find which layer (or combination of layers) would provide the shortest path to the objective.\\
+
+\subsubsection{Optimal controller}
+As outlined in the section on navigation testing, URSA struggled to enter narrow environments such as doorways.  Typical doorways are 0.8m, however URSA was only able to navigate gaps of 1m.  In emergency situations this is an obvious limitation.  One of the main reasons for this deficiency was the way in which navigation targets were sent to the PX4 controller.  Local targets were generated by the base station and updated when the drone approached a 'lethal' obstacle.  This in turn resulted in overshoot of the drone, for example when it already had velocity in the direction of an obstacle.  A future area of development would be to improve the way in which the local planner generated targets by modeling the dynamics of the drone.
+
+
+\section{Conclusion}
+In this report, we have presented a complete integrated system which allows indoor autonomous navigation of an unmanned aerial vehicle.\\
+
+We first surveyed the relevant literature in relation to navigation algorithms, SLAM algorithms, controllers for UAVs and examples of autonomous indoor systems.  We then undertook design of each individual component, along with systems level integration and simulation of UAV environments. A broad range of system components were developed from low-level driver scripts to high-level navigation algorithms.  The system was then tested in simulation and using real flight tests.\\
+
+The final solution was able to provide live vision to a base station, along with real-time mapping of the UAV's environment.  These achievements satisfied the scope as defined at the outset of the project.  We have quantified both the navigation and mapping accuracy of our system. We have also outlined a number of areas for potential future investigation in order to improve the solution to the point of being a complete product.
+
+
+
+
+\end{document}

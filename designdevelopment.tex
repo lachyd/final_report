@@ -4,13 +4,13 @@
 This chapter outlines the selection of individual components and algorithms. Also detailed is the organisation of these components into a functional system capable of meeting the project's specifications. In cases where system block functionality can be delivered by available technology, this has been indicated; in other cases software or hardware has been developed to fulfil specific requirements. This chapter concludes with a overall system architecture diagram showing the major sub-systems of the URSA solution.
 
 \section{Drone Selection}
-A major decision to be made for URSA was which UAV platform should be used for our prototype. The purpose of this section is to compare existing drone platforms and evaluate their suitability for our project.\\
-
-The goal of our project is to produce a drone that can autonomously navigate an indoor environment while simultaneously mapping the environment for use by the operator to identify hazards and inform tactics.  To achieve this outcome the drone will need to be outfitted with a number of sensors as detailed later in this report.\\
-
-The scope of our project includes the production of a prototype that can demonstrate the capabilities detailed in previous sections.  Therefore to test out algorithms and sensors a low cost platform is required that does not necessarily have to meet the performance criteria of a final product prototype. For example, it is not required that the drone be able to withstand high temperatures.\\
+The scope of our project includes the production of a prototype that can demonstrate the capabilities detailed in previous sections.  To test out algorithms and sensors a low cost aerial platform is required.  This platform does not necessarily have to meet the performance criteria of a final product. For example, it is not required that the drone be able to withstand high temperatures.\\
 
 Table \ref{tab:dronecriteria} outlines the major criteria considered in selecting an aerial platform for URSA. 
+
+The main criteria that imposed a limitation on the number of options for drone were the cost, API access and payload requirements.  Drones were considered to be low cost if they were approximately \$1,000 or less. API access was considered to be met if the drone had a mature software interface to its internal control scheme. Drones with a payload capacity greater than or equal to 500g were considered.\\
+
+A full comparison of drone platforms can be found in Table \ref{comparison}.  After surveying available drones the 2 potential options that best met this criteria are show in Table \ref{eligible_drones}
 
 \begin{table}[H]
 \centering
@@ -34,10 +34,6 @@ Table \ref{tab:dronecriteria} outlines the major criteria considered in selectin
 \caption{Prototype drone criteria\label{tab:dronecriteria}}
 \end{table}
 
-The main criteria that imposed a limitation on the number of options for drone were the cost, API access and payload requirements.  Drones were considered to be low cost if they were approximately \$1,000 or less. API access was considered to be met if the drone had a mature software interface to its internal control scheme. Drones with a payload capacity greater than or equal to 500g were considered.\\
-
-A full comparison of drone platforms can be found in Table \ref{comparison}.  After surveying available drones the 2 potential options that best met this criteria were:
-
 \begin{table}[H]
 \centering
 \begin{tabular}{@{}lllll@{}}
@@ -49,13 +45,7 @@ Erle Copter & \$870 - \$1,100 & \textless=1kg & Yes & Yes \\
 \caption{Shortlist of drones\label{eligible_drones}}
 \end{table}
 
-The Erle copter ranges in cost depending on the optional extras selected. Omitting the long-range telemetry and landing legs (recommended if using gimbal) reduces cost to \$870. Both drones are advertised as having an accessible API, whereas the Erle copter has the advantage of being integrated with ROS.\\
-
-The payload of the Erle copter is also considerably higher allowing more leeway for testing sensors and resulting in less strain on battery life.  The advantage of the 3DR solo is that it comes preassembled. The Erle copter has an option to also come preassembled however this will increase the cost to \$1,250 (failing the low cost criteria).\\
-
 We opted to purchase Erle Copter as a test drone.  Although lead time and build time was slightly higher than the 3DR solo, Erle copter is a better choice on all other criteria.\\
-
-This hardware selection review was conducted before deciding upon ROS as a communications layer. Using hindsight, the criteria should be updated from "accessible API" to "supports ROS". As is seen in later sections of the report, ROS was an integral component to run and integrate the majority of features including, receiving sensor data, visualization and navigational capabilities.
 
 
 \pagebreak
@@ -104,12 +94,12 @@ The desired system will exhibit autonomous navigation and obstacle avoidance. In
 
 This section outlines the design process undertaken in selecting the estimation algorithm, and a brief overview of the final algorithm selected. 
 
-\subsection{Pre-existing solutions for localising UAVs}
-In the above discussion, it was mentioned that sensor data needs to be used to interpret both URSA's location and surroundings. The location aspect of this may be surprising, since there are many commercially available UAVs (including very cheap options) which are already able to fully automate position control. This includes, for example, following a flight plan specified by waypoints, circling a designated object, or holding a given position\footnote{See for example, the advertised capabilities of the 3DR SOLO or the DJI Phantom Series, both of which are cheap UAVs which provide these capabilities}. It may be expected that URSA can simply duplicate an existing solution for the localisation aspect of the algorithm, leaving obstacle detection and avoidance as a seperate and additional system.\\
+\subsection{Estimation in GPS denied environments}
+ Many commercially available UAVs (including very cheap options) are already able to fully automate position control. This includes, for example, following a flight plan specified by waypoints, circling a designated object, or holding a given position\footnote{See for example, the advertised capabilities of the 3DR SOLO or the DJI Phantom Series, both of which are cheap UAVs which provide these capabilities}.\\ 
 
-However, this is not possible for the reasons which will be outlined below. Nevertheless, it is worth exploring the current approach taken by designers of commercial UAVs for the purposes of positional automation. This will further clarify the role of the estimation algorithm in the context of URSA.\\
+Although URSA cannot copy the designs of these drones since they rely on GPS data, it is worth exploring the current approach taken by designers of commercial UAVs. This will further clarify the role of the estimation algorithm in the context of URSA.\\
 
-The relevant data typically available to a UAV to allow localisation is some combination of the following:
+The relevant data typically available to an outdoor UAV to allow localisation is some combination of the following:
 \begin{itemize}
 	\item GPS coordinates
 	\item 3-axis Compass
@@ -128,8 +118,6 @@ This is usually a good approach for localisation since the data from the IMU, Co
 \end{figure}
 
 However, this approach cannot be applied to URSA. This is because in an indoor environment, GPS data is not generally available, and when the GPS data is available it is extremely inaccurate. GPS relies on unobstructed signal paths to a satellite. Indoors, GPS signals are usually obtained by reflection off surrounding objects. This changes the signal path lengths in unpredictable ways, and the data becomes unusable. Obtaining a reliable GPS signal indoors is an active area of research. The current state of this research suggests using indoor repeaters designed specifically for the space \cite{ozsoy}. This is obviously not practicable in an emergency situation, as these repeaters would likely not already be installed, or may be subject to failure. \\
-
-It may seem counterintuitive that a loss of one sensor (i.e. GPS) in Figure \ref{fig:estAlg2} would destroy the accuracy of the system. One of the advantages of fusing multiple sensors is in adding system redundancy. If one of the sensors fails, it is expected that the other sensors will still provide a good estimate of the attitude and position of the UAV. The reason why the system will fail without GPS can be seen by inspecting the remaining sensors. Critically, there are no remaining sources of direct latitude/longditude information, so the system will eventually accumulate error over time. \\
 
 The IMU provides us with a measurement of the second derivative of these values, however to obtain the position we then have to integrate these measurements twice. This procedure is known as `dead-reckoning', and has been used in navigation for several centuries. Dead-reckoning has the well-known drawback that errors are cumulative, so they continue to increase with each subsequent measurement. It is also clear that some error is unavoidable - even if our sensors were perfectly accurate, they are digital sensors which only provide a limited resolution in both time and amplitude. In reality, they are also not perfectly accurate, exhibiting biases even after calibration. If we consider just the case of a small bias, the cumulative nature of the estimation error can be shown by the following example.\\ 
 
@@ -169,12 +157,6 @@ In Figure \ref{fig:estAlg3}, the following system blocks merit some additional e
 	\item \textbf{EKF:} An estimation filter which fuses together different measurements into a state estimation. We are treating the position output of the NCE estimator as a single measurement from an observation model. The IMU data (linear and angular acceleration) is another measurement under the observation model. The process and advantages of fusing together these measurements is discussed earlier in this Chapter. The implementation of this filter is discussed in the next chapter.
 	\item \textbf{PID:} A controller which accepts a state estimation from the EKF and a setpoint from the autonomous navigation algorithm, and provides signals to the actuators (being the four rotors of the UAV) which attempt to fly the UAV to the setpoint position and attitude.
 \end{enumerate}
-
-In some indoor UAV implementations, devices which use optical flow have been developed to provide positional estimates in place of GPS sensors. The premise is that visible spectrum cameras are pointed directly at the floor. Subsequent frames are searched for offsets, which can be converted to velocity measurements. These velocity measurements typically have very little noise and no bias, so can be integrated without such a large error as described in the inertial case. An example of this type of device is the PX4FLOW sensor board \footnote{\url{https://pixhawk.org/dev/px4flow}}. \\
-
-This is typically a very robust approach to localisation. However, it has not been considered for URSA for two reasons: as with all visible light optical techniques, it is reliant on good lighting of the scene. This cannot be guaranteed in an emergency situation. A light source could be included on URSA, however this can cause flow calculations to be distorted by direct lighting and shadow casting on some surfaces.\\
-
-The second reason an optical flow sensor not appropriate to URSA is that it only solves the problem of localisation. The requirement remains to map URSA's surroundings in order to navigate. As will be seen, both localization and mapping can (and should) be solved simultaneously with one algorithm, rendering the flow sensor redundant. It may be the case that this redundancy is desirable. In a commercial or high-reliability situation which is required to be robust to one estimation method failing, an optical flow sensor may also be included. In our case, we are simply developing a prototype, and so haven't integrated a flow sensor.
 
     \begin{figure}[H]
     	\centering
@@ -231,16 +213,14 @@ Some further information regarding our evaluation of these algorithms is provide
  	\item \bf{Cartographer} \normalfont- Tested with pre-recorded laser scan data made available by the Cartographer authors\cite{cartdata}. Mapping and localisation found to be very good in 2D. Hardware requirements indicate that real-time performance would require a companion desktop machine.
 \end{itemize}
 
-Based on our assessment, we decided to use a 2D laser scanner and Cartographer to fulfill the requirements of our estimation algorithm. This required obtaining approval for the acquisition of a LiDAR scanner, which has a significant cost attached, however it is likely to be the only option which would allow the system to function correctly, and therefore has a clear business case. Further sensor details are discussed later in this report.\\
-
-The two major drawbacks of selecting Cartographer are:
+Based on our assessment, we decided to use a 2D laser scanner and Cartographer to fulfill the requirements of our estimation algorithm.  The two major drawbacks of selecting Cartographer are:
 
 \begin{itemize}
  	\item The requirement to use a dedicated base-station for undertaking SLAM processing. This is likely mitigated by the fact that in a real-world scenario, a base station for deployment and control is likely desirable anyway.
  	\item An initial limitation to only 2D mapping. This means that the initial prototype of URSA will only be capable of navigation in a 2D plane at a set altitude. This has the effect of limiting the scope of navigation algorithms to 2D, which simplifies that aspect of the project. Ideally, URSA should be capable of flying both over/under and around obstacles. However, given the R\&D focus of this project, it is desirable to limit the scope of initial prototypes where possible, allowing expansion on this scope in future once the basic concepts have been proved.
 \end{itemize}
 
-The practical impact of the 2D limitation above is that we will also require an additional sensor for UAV height. Barometric pressure is unlikely to provide sufficient resolution, and in any case fluctuates considerably in an indoor environment. The selection of this sensor is discussed in the following section. \\
+The practical impact of the 2D limitation above is that we will also require an additional sensor for UAV height. Barometric pressure is unlikely to provide sufficient resolution and considerable fluctuations were seen in an indoor environment. The selection of this sensor is discussed in the following section. \\
 
 \section{Selection of sensor hardware}
 In addition to the UAV itself, which is discussed previously, URSA will also require some additional sensor hardware in order for our NCE algorithm to function. It may seem that our choice of additional sensors beyond those already provided with the Erle-Copter was dictated by our choice of SLAM algorithm. In practice, there was interdependance between these decisions, so an analysis of sensor features was undertaken in parallel with SLAM algorithm selection. \\
@@ -311,7 +291,7 @@ Some additional factors were considered when arriving at this conclusion:
 \end{itemize}
 
 \section{Selection of additional software}
-Having selected the major hardware components of the system, as well as an appropriate estimation algorithm, we now turn to the design of an appropriate software architecture. This architecture must allow each system component to communicate and function in real-time manner. The main requirement of the software architecture is to combine each of the physical components (such as system sensors and actuators) and virtual components (such as navigation and estimation algorithms) in a coherent overall working system. The software architecure must also include an implementation of a flight controller. Finally, having selected an estimation algorithm which requires a companion desktop machine, the software architecture needs to include communications capabilities to allow the transfer of relevant data between URSA and its base station over a network.\\
+The main requirement of the software architecture is to combine each of the physical components (such as system sensors and actuators) and virtual components (such as navigation and estimation algorithms) in a coherent overall working system. The software architecture must also include an implementation of a flight controller. The software architecture also needs to include communications capabilities to allow the transfer of relevant data between URSA and its base station over a network.\\
 
 \subsection{Flight controller}
 The role of the flight controller unit (FCU) in URSA is to ingest navigation instructions and produce signals to the actuators. The signals must both move the UAV to the desired location, and result in stable flight. Stabilising flight requires very fast responses to feedback signals. For example, if there is a rapid change in air pressure, URSA may suddenly drop altitude or lose balance. The flight controller needs to have quick access to inertial measurements, which enables it to compensate for any changes to external conditions. \\
@@ -328,25 +308,29 @@ This split of data into `slow' and `fast' categories is shown at Figure \ref{fig
 	   	\caption{Basic flight controller requirements\label{fig:FCU}}
 \end{figure}
 
-The FCU encompasses both the EKF and PID system blocks shown at \ref{fig:estAlg3}, plus many other subsystems required for flight such as logging, system health monitoring, terminal output, flight mode switching, among others. The state vector estimated by the EKF which is used by the PID for control consists of $\bm{x}$ (3d estimate of position), $\dot{x}$ (3d estimate of linear velocity), $\bm{\theta}$ (estimate of attitude, consisting of roll, pitch and yaw values) and $\dot{\theta}$ (estimate of angular velocity). \\
+The FCU encompasses both the EKF and PID system blocks shown at \ref{fig:estAlg3}, plus many other subsystems required for flight such as logging, system health monitoring, terminal output, flight mode switching, among others. The state vector estimated by the EKF which is used by the PID for control consists of $\bm{x}$ (3d estimate of position), $\bm{\dot{x}}$ (3d estimate of linear velocity), $\bm{\theta}$ (estimate of attitude, consisting of roll, pitch and yaw values) and $\bm{\dot{\theta}}$ (estimate of angular velocity). \\
 
-A UAV flight controller is an extremely complex piece of software. The software must support multiple flight modes, waypoints and missions, providing output data, controlling actuators, interpreting data from multiple sources, amongst many other requirements. It must work reliably in a range of environments, and have parameters which can be tuned for different flight conditions. Writing a proprietary flight controller would likely consume the entire scope of a capstone project. It was considered not feasible to write a flight controller from scratch. \\
+The output of the PID controlled is expressed as a vector of four values: thrust ($\gamma$), yaw ($\theta$), pitch ($\phi$) and roll ($\psi$). These values are provided as a linear combination to a mixing matrix which produces amplitude signals to each of the four motors on the quadcopter. For example, a positive pitch value would cause the front rotors to spin slower than the rear motors. This is shown below, where the numbers 1-4 represent the output to each rotor.
 
-However, as outlined above, we also have very specific requirements on the flight controller, which are not met by existing software. For example, we need to build drivers for the flight controller to interact with our hardware and additional sensors. The solution is for us to use an open source flight controller as a starting point, and modify it to our purposes. There are two main open source flight controller projects, Ardupilot and PX4. The merits of each are briefly discussed below.
+\[
+    \begin{bmatrix}1\\2\\3\\4\end{bmatrix}= \begin{bmatrix}1&-1&1&-1\\1&-1&-1&1\\1&1&1&1\\1&1&-1&-1\end{bmatrix} \begin{bmatrix}\gamma\\ \psi \\ \phi \\ \theta \end{bmatrix}
+\]
+
+Writing a proprietary flight controller would likely consume the entire scope of a capstone project. It was considered not feasible to write a flight controller from scratch. However, as outlined above, we also have very specific requirements on the flight controller, which are not met by existing software. For example, we need to build drivers for the flight controller to interact with our hardware and additional sensors.  An open source flight controller was used as a starting point, and modified as required. There are two main open source flight controller projects, Ardupilot and PX4. The merits of each are briefly discussed below.
 
 \subsubsection{ArduPilot}
-ArduPilot, as the name implies, began life as an Arduino project\cite{arduhistory}. It was initially designed to run on Atmel MEGA microcontrollers; however the introduction of a hardware abstraction layer in around 2011 now allows the project to be compiled for any hardware, including ARM under Linux since around 2014. It is an extremely mature open-source project with many contributors bringing together hundreds of thousands of hours of test flights. A closed-source modified version of this software is provided with the Erle-Copter. The closed-source version contains drivers for all of the `fast' data sources relevant to the control system. \\
+ArduPilot \cite{arduhistory} is a mature open-source project with many contributors bringing together hundreds of thousands of hours of test flights. A closed-source modified version of this software is provided with the Erle-Copter. The closed-source version contains drivers for all of the `fast' data sources relevant to the control system. \\
 
 There are two major drawbacks to the ArduPilot software. The first is that the data fusion algorithm, whilst a sophisticated EKF implementation, does not allow for fusion of a direct position estimate as will be generated from our estimation algorithm. Specifically, we want to provide position and attitude observations from Cartographer at around \SI{10}{\hertz}, and fuse these with inertial measurements running at around \SI{1000}{\hertz}. This is not possible in the current version of ArduPilot.\\
 
-This may be seen as a minor drawback, since ArduPilot obviously supports GPS inputs. It should be possible to convert the euler coordinates to GPS information and `spoof'\footnote{`Spoof' is a common term used in computer science where the original of a signal is misrepresented to a target system. In this case, `spoofing' a GPS signal would consist of passing the output from Cartographer to ArduPilot as if Cartographer were actually a GPS signal. If this were done successfully, the system could not differentiate between the signal from Cartographer and the signal from a GPS device.} a GPS signal. However, this design is messy and precludes ever using GPS fusion in future, for example if URSA needs to navigate both indoors and outdoors. \\
+This may be seen as a minor drawback, since ArduPilot obviously supports GPS inputs. It should be possible to convert the euler coordinates to GPS information and `spoof'\footnote{`Spoof' is a common term used in computer science where the origin of a signal is misrepresented to a target system. In this case, `spoofing' a GPS signal would consist of passing the output from Cartographer to ArduPilot as if Cartographer were actually a GPS signal. If this were done successfully, the system could not differentiate between the signal from Cartographer and the signal from a GPS device.} a GPS signal. However, this design is messy and precludes ever using GPS fusion in future, for example if URSA needs to navigate both indoors and outdoors. \\
 
 The other drawback to ArduPilot is that our team were unable to get a reliable simulation working using the ArduPilot codebase. Simulation of the system will be discussed further in this report; however suffice to say that simulation is a critical aspect of the development of URSA without risking damage to expensive hardware in real flights.
 
 \subsubsection{PX4}
-PX4 is a relatively younger flight controller project\footnote{\url{http://px4.io/}}. PX4 development has been driven by ETH Zurich since around 2012. PX4 was specifically created to address ArduPilot's lack of support for more research oriented flight platforms. It was also felt that ArduPilot was constrained by its requirement to support some older AVR based hardware, which meant that it could not move towards a more modern middleware based communications layer. PX4 is by design more modular than ArduPilot, leveraging a messaging architecture between different nodes. This modular design is valuable for URSA, since it allows us to develop or modify only the components which are relevant to us. An overview of the PX4 software achitecture is shown at Figure \ref{fig:PX4Arch}.\\
+PX4 footnote{\url{http://px4.io/}} was specifically created to address ArduPilot's lack of support for more research oriented flight platforms. It was also felt that ArduPilot was constrained by its requirement to support some older AVR based hardware, which meant that it could not move towards a more modern middleware based communications layer. PX4 is by design more modular than ArduPilot, leveraging a messaging architecture between different nodes. This modular design is valuable for URSA, since it allows us to develop or modify only the components which are relevant to us. An overview of the PX4 software achitecture is shown at Figure \ref{fig:PX4Arch}.\\
 
-In Figure \ref{fig:PX4Arch}, the blue arrows indicate communications which are managed by the messaging layer (known as `uORB'). The abbreviations UART, CAN and PWM refer to embedded systems protocols which can be used to send data to actuators. For URSA, we actually used a PWM chip which was integrated to PX4 using an I2C driver we were required to write. I2C is an alternative embedded systems communication protocol. This is discussed further in the following chapter.\\
+In Figure \ref{fig:PX4Arch}, the blue arrows indicate communications which are managed by the messaging layer (known as `uORB'). The abbreviations UART, CAN and PWM refer to embedded systems protocols which can be used to send data to actuators. For URSA, we actually used a PWM chip which was integrated to PX4 using an inter-integrated circuit (I2C) driver we were required to write. I2C is an alternative embedded systems communication protocol. This is discussed further in the following chapter.\\
 
 \begin{figure}[H]
     \centering
@@ -354,71 +338,52 @@ In Figure \ref{fig:PX4Arch}, the blue arrows indicate communications which are m
     \caption{PX4 flight controller high-level architecture (source: PX4 documentation)\label{fig:PX4Arch}}
 \end{figure}
 
-Importantly, PX4 also overcomes the ArduPilot issues identified above. Initial prototyping allowed the URSA team to quickly implement working simulations using the PX4 source code, and the EKF implementation in PX4 contains the capability to fuse external position estimation data seperately from GPS. The performance of both controllers in flight is comparable, and developing code for either platform still requires a steep learning curve. \\
-
 The main drawback to PX4 is that drivers for the Erle-Brain hardware components are not provided by the manufacturer. These drivers will need to be written by the URSA team if PX4 is the flight controller chosen. However, this is likely unavoidable on either flight controller since using the Erle-Brain closed-source version of ArduPilot would mean that we would be unable to make the required GPS spoofing modifications. Fortunately, the hardware used by the Erle-Brain consists of a variety of common, well documented sensors and controllers. It was therefore possible (though time consuming) to write drivers for each of these devices.\\
 
-This investment of time to write low-level drivers was not properly appreciated until after the Erle-Copter was acquired. Had the team been aware of this earlier, it likely would have affected the hardware chosen. There are numerous hardware projects which are fully compatible with drivers already present in both PX4 and ArduPilot. This is discussed in further detail later in this report.\\
-
-We note that both PX4 and ArduPilot support a communications protocol known as \texttt{MAVlink} for sending and recieving data from the base station. This is the primary high-level communications protocol used for UAVs. While some of the messaging implementations vary between PX4 and ArduPilot, the differences are not relevant to the URSA project and this is therefore not a point of differentiation between the two controllers. \\
+We note that both PX4 and ArduPilot support a communications protocol known as \texttt{MAVlink} for sending and receiving data from the base station. This is the primary high-level communications protocol used for UAVs. While some of the messaging implementations vary between PX4 and ArduPilot, the differences are not relevant to the URSA project and this is therefore not a point of differentiation between the two controllers. \\
 
 Based on the above analysis, we decided to choose the PX4 flight controller software to be deployed on the onboard Raspberry Pi in order to control URSA.
 
 \subsection{Communications layer}\label{subsec:comm_layer}
-We have now introduced all of the major system components for URSA. These components will be spread across two platforms - the UAV computer (Raspberry Pi) and an x64 based desktop base station. Similarly to the role which uORB plays for the PX4 flight controller, we require a mechanism for each of these components to exchange messages. Our options in this regard are to either design and develop our own communications backbone, or leverage an existing solution. In general, the requirements of the communications layer are as follows:
+The system components will be spread across two platforms - the UAV computer (Raspberry Pi) and an x64 based desktop base station. We require a mechanism for each of these components to exchange messages. Our options in this regard are to either design and develop our own communications backbone, or leverage an existing solution. In general, the requirements of the communications layer are as follows:
 
 \begin{itemize}
 	\item Provide communications between the Raspberry Pi and the Base Station
 	\item Provide communications between different processes running on the same machine 
 \end{itemize}
 
-Fortunately, there already exists an extremely powerful Linux based communications system written specifically for robotics and automation applications. This system is known as the Robot Operating System (ROS). Whilst just meeting the above requirements is good, it may invite a consideration of other communications protocols which may be faster. For example, ZeroMQ\footnote{\url{http://zeromq.org/topics:omq-is-just-sockets}} provides very powerful cross-platform sockets for inter-process commmunications and over TCP/IP. \\
-
-However, there is one major advantage of ROS which makes it the clear choice for our commmunications layer and obviates the need to consider any other options: ROS provides a collaboration platform for thousands of open source robotics and automation packages. There is a package for Cartographer (our chosen estimation algorithm). There is a package which will drive our laser scanner. There are packages for calculating mathematical transfers. There is a package for communication using the MAVlink protocol discussed above. There are packages for visualisation and user interaction. There is also a well-defined build tool and workspace layout pattern which all packages follow, to allow standardised layout of project code. In other words, by leveraging pre-existing ROS packages we can significantly reduce our development time, and also increase the scope of the final product. \\
-
-As an example, suppose we want to install the ROS \texttt{tf} package, which allows tracking linear transforms between different frames of reference. Assuming we have set up a ROS environment, we use the ROS documentation to find the source code URL (\url{git@github.com:ros/geometry.git}), then we simply need to execute the following terminal commands:
-
-\begin{lstlisting}[language=bash]
-	cd src
-	git clone git@github.com:ros/geometry.git
-	cd ..
-	catkin build
-\end{lstlisting}
-
-This will download and build the \texttt{tf} package, which can then be used by other ROS software which we have built. In practice, the \texttt{tf} package and many other common packages are provided as pre-compiled binaries for Ubuntu and Debian Linux distributions - however the availability of the source code means that URSA can be easily compiled for any hardware in the future. In fact, as will be discussed further in this report, our choice of operating system for the Raspberry Pi required us to rebuild many aspects of the core ROS system, which was only possible due to the powerful build system outlined above.\\
+There already exists a powerful Linux based communications system written specifically for robotics and automation applications. This system is known as the Robot Operating System (ROS). The major advantage of ROS over other communications layers is that it also provides a collaboration platform for thousands of open source robotics and automation packages. By leveraging pre-existing ROS packages and build tools we can significantly reduce our development time, and also increase the scope of the final product. \\
 
 ROS also abstracts away the networking aspect of multi-machine communications, so the procedure for communicating between processes does not depend on where that process is running. This is perfect for our design, where the system spans both a machine on the drone and a base station. For these reasons, ROS is the clear choice for URSA. Further information about the operation of ROS is provided later in this report.
 
 \section{Overall System Architecture}
-Over the last several sections we have described each of the major components which will form a part of the URSA system. We are now in a position to bring each of these aspects together in order to provide a relatively detailed summary of the system architecture. In addition to providing this summary, this section will also discuss some minor design aspects which have not yet been presented. The final system architecture is shown at Figure \ref{fig:overArch}. The distinction between software which is part of the PX4 bus and software which is part of the ROS bus is indicated. Additionally, components are grouped according to where they are physically located - on either the UAV or the base station. \\
-
-The remainder of this section discusses some of the more nuanced design decisions which guided the development of the overall system architecture.
+This section brings together each component of the URSA design in a detailed system architecture, and also discusses some minor design aspects which have not yet been presented. The final system architecture is shown at Figure \ref{fig:overArch}. The distinction between software which is part of the PX4 bus and software which is part of the ROS bus is indicated. Additionally, components are grouped according to where they are physically located - on either the UAV or the base station. 
 
 \subsection{Network solution}
-As has been mentioned throughout this report, due to the selection of a fairly processor intensive estimation algorithm, we have been required to develop a base station for data processing. This base station also serves as a good place for a GUI and some other non-timing critical logic. In order for the base station to communicate with URSA, some form of wireless network is required. No mention has yet been made of the physical implementation of this communciations layer.\\
+As has been mentioned throughout this report, due to the selection of a fairly processor intensive estimation algorithm, we have been required to develop a base station for data processing. This base station also serves as a good place for a GUI and some other non-timing critical logic. In order for the base station to communicate with URSA, some form of wireless network is required. No mention has yet been made of the physical implementation of this communications layer.\\
 
 
 For the purposes of this project, we have implemented the physical layer using the Raspberry Pi onboard WiFi chip and a NetGear access point. This has proven to be sufficient for prototyping purposes. A more detailed discussion on the implications of this physical layer and areas for future development and testing is provided in the Conclusion section of this report.
 
 
 \subsection{Location of LiDAR/SONAR drivers}
-As can be seen at Figure \ref{fig:overArch}, a decision was made to place the LiDAR drivers on the ROS bus, and the SONAR height sensor on the PX4 uOrb bus. It may seem that these measurements belong together, both being of the `slow' data type. However, the rationale for placing the LiDAR scanner within the ROS ecosystem is as follows:
+As can be seen at Figure \ref{fig:overArch}, a decision was made to place the LiDAR drivers on the ROS bus, and the SONAR height sensor on the PX4 uOrb bus. The rationale for placing the LiDAR scanner within the ROS ecosystem is as follows:
 
 \begin{itemize}
 	\item ROS already provides full support for both laser scan message types and the Hokuyo device we are using. Placing these drivers in PX4 would required re-writing the drivers and modifying the MAVLINK interface to allow the exchange of laser scan data.
 	\item PX4 cannot actually use the laser scan data for control tasks. It can only use the position estimate generated from the laser scan data by Cartographer.
 \end{itemize}
 
-Conversely, we decided to place the SONAR height sensor within the PX4 ecosystem. The reason for this is that PX4 \emph{can} actually use the height data generated by the SONAR height sensor directly. While the initial design does not make use of this data until it is combined with the latitude and longditude estimate produced by Cartographer, placing the SONAR height sensor within PX4 allows the system to be expanded to fall back on SONAR data if the communications link fails. This could be used to land the UAV gently on the ground if position lock fails.
+Conversely, we decided to place the SONAR height sensor within the PX4 ecosystem. The reason for this is that PX4 \emph{can} actually use the height data generated by the SONAR height sensor directly. While the initial design does not make use of this data until it is combined with the latitude and longitude estimate produced by Cartographer, placing the SONAR height sensor within PX4 allows the system to be expanded to fall back on SONAR data if the communications link fails. This could be used to land the UAV gently on the ground if position lock fails.
 
 \subsection{Location of MAVROS}
-Since our ROS implementation spans both the base station and the UAV, one possible design could be to place MAVROS on the Raspberry Pi, streamlining all network communications through ROS. We decided that there were no major benefits either way to placing MAVROS on the UAV or on the base station. We chose to place it on the base station since this meant a greater level of correlation between the code used to launch the simulation and the code used to launch the real drone; however this is fairly superficial and if necessary MAVROS could easily be moved to run on the Raspberry Pi.
+Since our ROS implementation spans both the base station and the UAV, one possible design could be to place MAVROS on the Raspberry Pi, streamlining all network communications through ROS. We decided that there were no major benefits to placing MAVROS on the UAV or on the base station. We chose to place it on the base station since this meant a greater level of correlation between the code used to launch the simulation and the code used to launch the real drone.
 
 \subsection{Role of data conditioning nodes}
 In many cases, the input/output message formats of the components used were not fully compatible, despite providing essentially the same data. In other cases, it was desirable to combine multiple sets of data into a single message format. These functions were fulfilled by custom written data conditioning nodes as required. Some examples are outlined below, with further information in the implementation chapter:
 
 \begin{itemize}
-	\item The output of Cartographer is a 2d position and orientation. The PX4 EKF requires a 3d position and attitude (roll, pitch, and yaw) as inputs. A node was written which reads SONAR height data and combines this with the Cartographer output before passing this to the EKF.
+	\item The output of Cartographer is a 2D position and orientation. The PX4 EKF requires a 3D position and attitude (roll, pitch, and yaw) as inputs. A node was written which reads SONAR height data and combines this with the Cartographer output before passing this to the EKF.
 	\item The EKF outputs a smoothed attitude estimator. The smoothed attitude estimator is better than raw measurements when projecting laser scans taken at a given orientation to a 2D plane. This projection is required as an input to Cartographer. However, the EKF does not output the smooth estimation data until we begin providing estimates from Cartographer. It is a `chicken and egg' scenario. We wrote a node to bootstrap the system using raw IMU data to get the EKF running, then switch to smoothed attitude data once this became available.
 \end{itemize}
 

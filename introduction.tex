@@ -9,10 +9,6 @@ The Metropolitan Fire Brigade (MFB) provides fire and emergency services to almo
 
 A common theme amongst these scenarios is the expectation for firefighters to enter adverse conditions where they have little or no prior knowledge. Examples of this may include; smoke filled environments (low visibility), entering structurally unsound areas, locating and extinguishing small fires, responding to chemical spillages without knowledge of the contents or taming fires that may have toxic smoke.\\
 
-Under these conditions MFB personnel are required to effectively coordinate their team and make time critical decisions.  The rate at which data can be gathered has tangible outcomes on people's safety and the speed of their response.  In come cases it may not be possible to retrieve the required information to take action (e.g. unknown structural stability), effectively limiting the types of scenarios they can respond to.\\
-
-As a result the MFB dedicates resources to exploring ways in which it can provide both its on-ground personnel and strategists the tools to make the best possible decisions.\\
-
 One avenue that the MFB has begun exploring is drone technology.  In particular, off the shelf DJI drones fitted with thermal and visible light cameras have been providing the MFB with a birds eye perspective of response scenes. This use of technology is a significant advantage over traditional ladder platforms that are limited by their observation height and do not carry the required sensors for thermal and plume analysis. During its pilot program, their drones have been successfully deployed in a number emergency situations. A few examples are given below:
 \begin{enumerate}
     \item \textbf{Coolaroo Recycling Plant}: A recycling plant in Melbourne's Northern suburbs caught fire releasing toxic smoke ultimately resulting in the evacuation of 100 residents.
@@ -20,15 +16,23 @@ One avenue that the MFB has begun exploring is drone technology.  In particular,
     \item \textbf{Post Fire Investigation}  - Aerial images provide evidence in a coroners report.
 \end{enumerate}
 
-All examples given above were outdoor operations. The current state of the program relies solely on manual operation. Indoor environments are more challenging for human pilots to navigate as consideration needs to be given to stationary and moving obstacles, tighter constraints on flyable areas (doorways, windows) and obscured line of sight to drone. In addition, indoor environments impose harsher operating conditions including higher temperatures and limited visibility from smoke. As a result MFB currently does not have any drones that can operate indoors. Despite this, indoor scenarios make up a considerable portion of emergency situations, particularly those where personnel are exposed to hazardous environments.\\
+All examples given above were outdoor operations. The current state of the program relies solely on manual operation. Indoor environments are more challenging for human pilots to navigate as consideration needs to be given to stationary and moving obstacles, tighter constraints on flyable areas (doorways, windows) and obscured line of sight to drone. In addition, indoor environments impose harsher operating conditions including higher temperatures and limited visibility from smoke. As a result MFB currently does not currently operate any drones indoors. Despite this, indoor scenarios make up a considerable portion of emergency situations, particularly those where personnel are exposed to hazardous environments.\\
 
 \subsection{Project objective}
-The objective of this project was to develop an autonomous, indoor UAV which does not require direct control by a trained UAV pilot. The UAV must be capable of reporting a live video feed of its current observation, as well as constructing a floor map of the area in which it is flying. Navigation algorithms need to ensure that the UAV does not hit any static or moving obstacles as it moves towards goals.\\
+The objective of this project was to develop an autonomous, indoor unmanned aerial vehicle (UAV),  which does not require direct control by a trained UAV pilot. The UAV must be capable of reporting a live video feed of its current observation, as well as constructing a floor map of the area in which it is flying. Navigation algorithms need to ensure that the UAV does not hit any static or moving obstacles as it moves towards goals.\\
 
 The individual components of such a system are well known in the literature, and include UAV flight controllers, sensor fusion algorithms, simultaneous localization and mapping algorithms, and navigation algorithms. Many of these components are available as open source components, and can be treated as a `black box' (where only the inputs and outputs need to be known) or as a `gray box' (where some details of the algorithm need to be known for configuration or modification purposes). As a result, the focus of this project is on system design and system integration to achieve a desired result, with less focus devoted to theoretical treatment of each component.\\
 
 \subsection{Report structure}
-This report is structured into five chapters. This first chapter focuses on the background to the project, and the formal requirements/success criteria. The second chapter focuses on the literature review undertaken in relation to indoor autonomous UAVs and their component systems. The third chapter documents the design process of the system. The fourth chapter details our implementation methodology and issues encountered during implementation. Test results and conclusions are provided in a final fifth chapter. \\
+This report is structured into six chapters. 
+\begin{enumerate}
+    \item This first chapter focuses on the background to the project, and the formal requirements/success criteria. 
+    \item The second chapter focuses on the literature review undertaken in relation to indoor autonomous UAVs and their component systems. 
+    \item The third chapter documents the design process of the system. 
+    \item The fourth chapter details our implementation methodology and issues encountered during implementation. 
+    \item Test results are provided in the fifth chapter. 
+    \item Our conclusions and areas for future research are presented in the final sixth chapter.\\
+\end{enumerate}
 
 Appendices are provided, including datasheets for all relevant components. Due to the volume of code developed, code has not been provided but is available on GitHub at \url{http://www.github.com/ursa-drone}.
 
@@ -41,37 +45,7 @@ The scope of the project was to deliver a prototype UAV which achieves the follo
 	\item \textbf{A live 2D mapping of an indoors environment:} URSA was required to generate an accurate visualisation of the layout of the environment in order to guide decision making.
 \end{enumerate}
 
-The above list summarises the main scope of this project. However, achieving these alone would not likely guarantee a `final' product which could be deployed. The following list details the features beyond the scope of this project, which would need to be addressed in any real-world application:
-\begin{itemize}
-	\item Protection against weathering and dynamic environments: As the drone was to be used as a prototype for future UAV developments, it was decided that environment-proof considerations in real disaster management scenarios, such as the selection of suitable materials, was beyond the scope of this project.
-    \item General hardening of navigation software and thorough testing of edge cases.
-    \item Performance analysis in real-world emergency scenarios.
-    \item Design of a precision controller able to achieve increased speed in navigation within safety parameters.
-\end{itemize}
 
-These are non-trivial requirements. It is likely that, even should this project be successful, significant further research would be required to achieve a final product which could be deployed in emergency scenarios, by satisfying the above additional features.
+The above list summarises the main scope of this project. However, achieving these alone would not likely guarantee a `final' product which could be deployed. There are many areas for future development which would be required in order to achieve a real-world product. These are discussed in the conclusion of this report.  
 
-
-\section{Project management}
-\subsection{Budget and BOM}
-The standard capstone project budget is \$130 per student, for a total of \$390. While this is very generous, it is not sufficient for our project. This is because our scope includes building or acquiring a prototype drone. As will be shown in later sections, this cannot be done for less than around \$800. Further, the sensors which we will be required to use are expensive - a typcial entry level LiDAR scanner is over \$1,000. As with the drone, the justifications for these design requirements will be presented in later sections.\\
-
-The conclusion is that additional funding would be required for our project. This was discussed and agreed with our supervisor, and a basic Bill of Materials was prepared. This is attached at Appendix A. The budget for this BOM was \$2,214 in the first instance, plus the use of some additional components already purchased by the University.\\
-
-In addition to this, we were required to purchase incidentals throughout the course of the project. This included heavy gauge wire, 3D printing filament, wiring, connectors and many other minor parts. These incidentals were minor and were able to be absorbed within our allocated student budgets.
-
-\subsection{Project timeframe}
-At the outset of the project, we prepared a detailed timeframe with key dates. A simplified timeframe from this phase is reproduced below:
-
-\begin{itemize}
-\item Construction of the flight platform (April 2017)
-\item Programmatic drone flight control (May 2017)
-\item Environment mapping (June 2017)
-\item Autonomous navigation and photography (August 2017)
-\item Extension topics (multi-storey buildings etc) 
-\end{itemize}
-
-During the project, we were also required to revisit this plan and manage tasks to a greater level of detail. For this, we made use of a number of project management tools for planning and tracking of work. Tools used included Asana, Slack and GitHub. For our project, we created an `organisation' on GitHub, which can be viewed here: \url{https://github.com/ursa-drone}. The repository naming is fairly self-explanatory when read in conjunction with the remainder of this report. \\
-
-Git was found to be a very powerful tool. We soon found that a large proportion of our project would require complex software development. Git allows branching of versions, making modifications, and then merging those branches back into the master repository. In this way, many users could work on the same code simultaneously, with the only application of thought to synchronisation being required when conflicts between users' code occurred. Even in this case, Git provides powerful tools for conflict resolution. Much of our project progression can be tracked via Git repositories.
 \end{document}
