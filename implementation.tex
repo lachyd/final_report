@@ -189,7 +189,7 @@ Unfortunately, we did find that starting the motors re-introduced some minor jit
 
     \begin{table}[H]
     \centering
-        \begin{tabular}{|p{1.8cm}|c|c|c|}
+        \begin{tabular}{|P{1.8cm}|c|c|c|}
             \hline
             Reference on Figure \ref{fig:erleHat} & Description & Part number & Connection to Pi\\
             \hline
@@ -824,9 +824,9 @@ To achieve this the global plan index used to generate a local trajectory was pa
 %     \caption{Operation of Ursa goal cost function}\label{fig:ugcf}
 % \end{figure}
 
-As mentioned above a final score for a local trajectory is determined by summing across all cost functions.  Therefore, the relative scaling between the obstacle cost function and ursa goal cost encodes some implicit preference between distance from obstacle and length of path.  The most desired behaviour being a trajectory that advances furthest along the global plan whilst being far from obstacles.  The least desired behaviour being a trajectory that does not advance very far along the global plan and is set close to obstacles.\\
+As mentioned above a final score for a local trajectory is determined by summing across all cost functions.  Therefore, the relative scaling between the obstacle cost function and goal cost encodes some implicit preference between distance from obstacle and length of path.  The most desired behaviour is a trajectory that advances furthest along the global plan whilst being far from obstacles.  The least desired behaviour being a trajectory that does not advance very far along the global plan and is set close to obstacles.\\
 
-The difficulty is in choosing the trade-off between path length and distance from obstacles.  Multiple attempts were taken to design alternative cost functions to better control desired behaviour \footnote{See local\_costmap\_slider.m in appendix}.  However the most robust approach was to select the appropriate parameters of the goal cost function using a simplified model (figure \ref{fig:goal_cost_model}). 
+In many environments there is a trade-off between path length and distance from obstacles. Straight lines which progress further along a curve often do so by cutting a corner closer to an obstacle. Multiple attempts were taken to design alternative cost functions to better control desired behaviour \footnote{See local\_costmap\_slider.m in appendix}.  We found a good approach was to select the appropriate parameters of the goal cost function using a simplified model (figure \ref{fig:goal_cost_model}). 
 
 \begin{figure}[H]
     \centering
@@ -838,8 +838,8 @@ Figure \ref{fig:goal_cost_model} shows an obstacle modeled as a point with a sur
 
 \begin{align*}
     \text{Obstacle cost function} &=  Ae^{-c\cdot csf}\\
-    \text{Goal cost function} &=    Be^{-d\gamma}\\
-    \text{Total cost} &=  Ae^{-c\cdot csf} + Be^{-d\gamma}\\
+    \text{Goal cost function} &=    Be^{-d\lambda}\\
+    \text{Total cost} &=  Ae^{-c\cdot csf} + Be^{-d\lambda}\\
     \end{align*}
 A number of these variables have values which are specified by other aspects of the system, such as the cost map implementation:
 \begin{align*}
@@ -851,9 +851,13 @@ A number of these variables have values which are specified by other aspects of 
     c   &=    rcos(\theta) - \alpha\\
     \theta &=   cos^{-1}(\frac{c+\alpha}{r})\\
     d   &=    2\theta r\\
-        &=    2rcos^{-1}(\frac{c+\alpha}{r})\\
+        &=    2rcos^{-1}(\frac{c+\alpha}{r})
 \end{align*}
-Therefore the only free parameters are c, B and $\gamma$.  As c encodes the distance between the inflation radius and the closest point along the local trajectory, we need to pick a suitable value for $c>0$ that encodes our qualitative preference.  Figure \ref{fig:ocf_total_cost} shows that the minimum total cost can be determined by varying the parameters B and $\lambda$.  Selecting the parameters, B=100 and $\lambda=1$ encodes our preference for the drone to prefer trajectories $\approx 1m$ from an obstacle.  Trajectories close to obstacles are penalised, likewise trajectories too far from an obstacle imply a short trajectory and are therefore also penalised.  It should be noted that $d$ is a monotonically decreasing function of $c$, therefore larger distance from obstacles implies a shorter trajectory.
+Therefore the only free parameters are c, B and $\lambda$.  As c encodes the distance between the inflation radius and the closest point along the local trajectory, we need to pick a suitable value for $c>0$ that encodes our qualitative preference for how much space URSA should give to objects which it passes. Figure \ref{fig:ocf_total_cost} shows that $c$ corresponding to the minimum total cost can be determined by varying the parameters B and $\lambda$. For example, selecting the parameters, B=100 and $\lambda=1$ encodes our preference for the drone to prefer trajectories $\approx 1m$ from an obstacle.  Trajectories close to obstacles are penalised, likewise trajectories too far from an obstacle imply a short trajectory and are therefore also penalised. \\
+
+It should be noted that $d$ is a monotonically decreasing function of $c$, therefore larger distance from obstacles implies a shorter trajectory in our simple single obstacle model. This will not always be the case, but we found that the model provides a good framework for tuning parameters.\\
+
+It is worth noting in Figure \ref{fig:ocf_total_cost} that the lowest cost $c$ for a given $\lambda$ is indicated by the red contour. For very small $\lambda$, the impact of the goal cost function is likely to be small as this function decays so slowly that almost all goals are penalised equally. Therefore the minima is dictated mostly by the obstacle cost function and the solution occurs at higher $c$. Similarly, at very high $\lambda$, the goal cost function decays so quickly to zero that it makes almost no difference to the overall minima, which is again dominated by the obstacle cost. It is only at intermediate values of $\lambda$ that we see this function having any effect at all on the minima of the cost function, and solutions which `cut corners' and reduce $c$ start to be preferred. Note that $\lambda$ is plotted on a logarithmic scale. 
 
 \begin{figure}[H]
     \centering
@@ -867,7 +871,7 @@ Therefore the only free parameters are c, B and $\gamma$.  As c encodes the dist
         \includegraphics[width=0.9\textwidth]{imgs/obstacle_vs_goal_B_504.jpg}
         \caption{B = 504}
     \end{subfigure}
-    \caption{Total cost = $Ae^{-c\cdot csf} + Be^{-d\gamma}$ as a funciton of $c, \lambda$ for different B values}\label{fig:ocf_total_cost}
+    \caption{Total cost = $Ae^{-c\cdot csf} + Be^{-d\lambda}$ as a funciton of $c, \lambda$ for different B values. Red line indicates lowest cost $c$ for a given lambda (and therefore the margin given to obstacles during navigation)}\label{fig:ocf_total_cost}
 \end{figure}
 
 
