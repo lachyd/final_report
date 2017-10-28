@@ -741,8 +741,6 @@ The inflation layer creates a buffer around the occupied cells by propagating co
     \caption{Inflation layer\label{fig:inflation_layer}}
 \end{figure}
 
-The exponential function can be tuned using the cost scaling factor and inflation radius parameter.  The cost scaling factor controls the rate at which the costs approach 1.  The inflation radius sets a hard boundary for which the inflation layer extends.  Figure \ref{fig:costmap_config} shows various configurations of the inflation layer.  Purple indicates the presence of an obstacle.  If the centre of the robot is in the teal area, the robot radius will have collided with the obstacle.  The gradient red to blue encodes the decaying exponential function with red being 252 and the darkest blue being 1.\\
-
 \begin{figure}[H]
     \centering
     \begin{subfigure}{0.33\textwidth}
@@ -775,8 +773,10 @@ The exponential function can be tuned using the cost scaling factor and inflatio
         \includegraphics[width=0.9\textwidth]{imgs/lcm/lcm_csf_10_ir_15.png}
         \caption{csf = 10, ir = 1.5}
     \end{subfigure}
-    \caption{Various configurations of the cost scaling factor (csf) and inflation radius (ir)}\label{fig:costmap_config}
+    \caption{Various configurations of the cost scaling factor (csf) and inflation radius (ir).  Purple indicates the presence of an obstacle.  If the centre of the robot is in the teal area, the robot radius will have collided with the obstacle.  The gradient red to blue encodes the decaying exponential function with red being 252 and the darkest blue being 1.}\label{fig:costmap_config}
 \end{figure}
+
+The exponential function can be tuned using the cost scaling factor and inflation radius parameter.  The cost scaling factor controls the rate at which the costs approach 1.  The inflation radius sets a hard boundary for which the inflation layer extends.  Figure \ref{fig:costmap_config} shows various configurations of the inflation layer.\\
 
 The ideal configuration of the costmap could be debated depending on situation and desired properties.  In some instances you may want the drone to take the safest path by preferring to choose paths through the middle of a room.  This could be achieved by setting the inflation radius to a large value so that the whole area is assigned some cost value. \\
 
