@@ -1,0 +1,130 @@
+\documentclass{article}
+\title{ELEN90067 - Capstone Project - RR4-IP \\Unmanned Recon and Surveillance Aircraft (U.R.S.A.) \\ \Huge Individual Contribution Statement}
+\author{\large Lachlan Dowling - 682434}
+\date{2017}
+\setlength\parindent{0pt}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{amssymb,amsmath}
+\usepackage{xr}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\renewcommand{\arraystretch}{1.5}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage[]{algorithm2e}
+\usepackage{pgfplots}
+\usepackage{afterpage}
+\pgfplotsset{compat=1.12}
+\usepackage{soul}
+\usepackage{pdfpages}
+\usepackage{xstring}
+\usepackage{siunitx}
+\usepackage{tikz}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{mathtools}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{rotating}
+\usepackage{pdflscape}
+\usepackage{appendix}
+\usepackage{subfiles}
+\usepackage{setspace}
+\usepackage[americancurrents, americanvoltages,siunitx]{circuitikz}
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Capstone Project}
+\rhead{Individual Contribution: Lachlan Dowling (682434)}
+\rfoot{Page \thepage}
+\DeclareSIUnit\dBm{dBm}
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{\node[shape=circle,draw,inner sep=2pt] (char) {#1};}}
+\let\oldhat\hat
+\renewcommand{\hat}[1]{\oldhat{\bm{#1}}}
+\lstset{basicstyle=\ttfamily,
+    showstringspaces=false,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red}\ttfamily,
+    commentstyle=\color{green}\ttfamily
+}
+\renewcommand\thesection{\arabic{section}.}
+\renewcommand\thesubsection{\arabic{chapter}.\arabic{section}.\arabic{subsection}. \ }
+\renewcommand\thesubsubsection{}
+\renewcommand\theparagraph{(\roman{paragraph})}
+\renewcommand\thesubfigure{\roman{subfigure}}
+
+\titleformat{\section}[frame]
+{\normalfont}
+{\filright
+\footnotesize}
+{8pt}
+{\Large\bfseries\filcenter \enspace \thesection \enspace}
+
+\titleformat{\subsection}[hang]
+{\normalfont\sffamily}
+{\large\bfseries\thesubsection}{1.5em}{\large\bfseries}
+
+
+\titleformat{\subsubsection}[hang]
+{\normalfont\sffamily}
+{\bfseries{\thesubsubsection}}{.5em}{\bfseries}
+
+\setcounter{secnumdepth}{4}
+\titleformat{\paragraph}[runin]
+{\normalfont\sffamily}
+{\theparagraph}{.5em}{}
+
+\everymath={\displaystyle}
+
+\newenvironment{changemargin}[2]{%
+\begin{list}{}{%
+\setlength{\topsep}{0pt}%
+\setlength{\leftmargin}{#1}%
+\setlength{\rightmargin}{#2}%
+\setlength{\listparindent}{\parindent}%
+\setlength{\itemindent}{\parindent}%
+\setlength{\parsep}{\parskip}%
+}%
+\item[]}{\end{list}}
+\onehalfspacing
+
+\begin{document}
+\thispagestyle{empty}
+    \maketitle
+    \thispagestyle{empty}
+    
+    \newpage
+
+    \clearpage
+    \setcounter{page}{1}
+
+\section{Contribution to project}
+My contribution to the project included the following:
+\begin{enumerate}
+    \item Primary resposibility for researching and selection of SLAM algorithms. Rapid prototyping of systems to evaluate SLAM algorithms prior to selection. Collaboration with Hao Tang to select sensors suitable for chosen SLAM algorithm and within budgetary constraints.
+    \item Primary responsibility for selecting and configuring the UAV flight controller. Configuration of simulation environment for our flight controller/navigation algoirithms and development of tools to aid in simulation. 
+    \item Primary responsibility for configuring networking between Raspberry Pi and base station. Primary responsibility for compiling RTOS operating system for the Raspberry Pi.
+    \item Primary responsibility for sensor driver development. Collaboration with Hao Tang to ensure signal output from conditioning board met specifications and could be interpreted by my drivers.
+    \item Primary responsibility for powering the drone. Selection of components to provide adequate power to the drone.
+    \item Joint responsibility for developing an overall system architecture to allow the system components to interact. Engaging with team members over the advantages and drawbacks of different options.
+    \item Joint responsibility for configuring base station software and lauch files. Working with Isaac Hook to ensure base station inputs/outputs were as expected by the software on the Raspberry Pi.
+    \item Undertaking tasks delegated by Isaac Hook in relation to navigation capabilities. Joint responsibility for developing C++ code to undertake UAV navigation. Joint responsibility in analysis and design of proposed algorithms for navigation.
+\end{enumerate}
+
+
+\section{Contribution to report}
+My contribution to the report included primary responsibility for writing the following sections:
+\begin{enumerate}
+    \item Abstract.
+    \item Literature review chapter, excluding section on Navigation.
+    \item Design development chapter, excluding `Selection of sensor hardware' and `Drone selection'.
+    \item The `Interfacing with sensors' and `Hovering in place' sections of the System Development chapter.
+\end{enumerate}
+
+Some of the sections were written jointly by the team, for example the `Testing' and `Conclusion' chapters. Additionally, all team members contributed to the editing process.
+
+\end{document}
