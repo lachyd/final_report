@@ -41,7 +41,7 @@ A recent alternative to filter based SLAM requires first re-imagining the SLAM p
 
 Given this notation, the joint probability distribution of robot/map configurations given sensor observations up to time $T$ can be expressed as $p(r(0), r(1), ... , r(T), m | o(0), o(1), ... , o(T))$, which we will refer to as $p(R,M|O)$. We clearly want to find estimates $\hat{R}$ and $\hat{M}$ which satisfy $[\hat{R} \ \hat{M}] = \arg \max_{[R \  M]} p(R,M|O)$. The exact form which this distribution takes depends on the nature of the observation data.\\
 
-However, one way to construct this distribution in a very general manner for a variety of possible sensors is by using a factor graph. A factor graph assumes that there are conditionally independant terms within the joint distribution. For example, we might assume:
+However, one way to construct this distribution in a very general manner for a variety of possible sensors is by using a factor graph. A factor graph assumes that there are conditionally independant terms within the joint distribution which can be factorized out of the overall distribution. For example, we might assume:
 
 \[
   p(R,M|O)= p(r(0), r(1), ... , r(T), m | o(0), o(1), ... , o(T-1))p(r(T), m | o(T))

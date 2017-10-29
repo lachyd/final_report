@@ -6,6 +6,7 @@
 *.log
 *.out
 *.pdf
+!coversheet.pdf
 *.gz
 *.tox
 *.toc
